@@ -1,0 +1,3 @@
+Table creation attempted.
+2025-04-26 05:02:05,733 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-04-26 05:02:05,733 INFO sqlalchemy.engine.Engine COMMIT
