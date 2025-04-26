@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.room import Room, RoomStatus
 from app.models.user import User
+from app.models.room_member import RoomMember  # Ensure RoomMember is imported
 from app.schemas.room import RoomCreate, RoomResponse
 from app.core.auth import get_current_user
 import uuid
@@ -46,11 +47,49 @@ async def get_public_rooms(db: Session = Depends(get_db)):
     rooms = db.query(Room).filter(Room.is_public == True, Room.status == RoomStatus.OPEN).all()
     return rooms
 
+@router.post("/public/join/{id}", response_model=RoomResponse)
+async def join_public_room(id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Join a public room by ID."""
+    room = db.query(Room).filter(Room.id == id, Room.is_public == True, Room.status == RoomStatus.OPEN).first()
+    if not room:
+        raise HTTPException(status_code=404, detail="Public room not found or closed")
+    
+    # Check if the user is already a member of the room
+    if db.query(RoomMember).filter(RoomMember.user_id == user.id, RoomMember.room_id == id).first():
+        raise HTTPException(status_code=400, detail="You are already a member of this room")
+    
+    # Add the user to the room
+    room_member = RoomMember(user_id=user.id, room_id=room.id)
+    db.add(room_member)
+    db.commit()
+    db.refresh(room_member)
+    
+    return room
+
 @router.get("/private", response_model=list[RoomResponse])
 async def get_private_rooms(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """List private rooms created by the authenticated user."""
     rooms = db.query(Room).filter(Room.is_public == False, Room.creator_id == user.id).all()
     return rooms
+
+@router.post("/private/join", response_model=RoomResponse)
+async def join_private_room(token: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Join a private room by token."""
+    room = db.query(Room).filter(Room.token == token, Room.is_public == False, Room.status == RoomStatus.OPEN).first()
+    if not room:
+        raise HTTPException(status_code=404, detail="Private room not found or closed")
+    
+    # Check if the user is already a member of the room
+    if db.query(RoomMember).filter(RoomMember.user_id == user.id, RoomMember.room_id == room.id).first():
+        raise HTTPException(status_code=400, detail="You are already a member of this room")
+    
+    # Add the user to the room
+    room_member = RoomMember(user_id=user.id, room_id=room.id)
+    db.add(room_member)
+    db.commit()
+    db.refresh(room_member)
+    
+    return room
 
 @router.get("/search/{token}", response_model=RoomResponse)
 async def search_private_room(token: str, db: Session = Depends(get_db)):

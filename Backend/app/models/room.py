@@ -15,6 +15,8 @@ class Room(Base):
     status = Column(Enum(RoomStatus), nullable=False, default=RoomStatus.OPEN)
     is_public = Column(Boolean, nullable=False)
     token = Column(String, nullable=True)
-    creator = relationship("User", back_populates="rooms")
+
+    creator = relationship("User", back_populates="rooms")  # Relationship to User
     bets = relationship("Bet", back_populates="room")
     messages = relationship("Message", back_populates="room")
+    members = relationship("RoomMember", back_populates="room")  # Relationship to RoomMember
