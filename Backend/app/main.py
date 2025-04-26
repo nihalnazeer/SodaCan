@@ -4,6 +4,7 @@ from app.api.users import router as user_router
 from app.api.rooms import router as room_router
 from app.api.bets import router as bet_router
 from app.api.messages import router as message_router
+from app.core.auth import router as auth_router
 from app.core.database import init_db
 
 app = FastAPI(
@@ -23,6 +24,7 @@ app.include_router(user_router, prefix="/api/users", tags=["Users"])
 app.include_router(room_router, prefix="/api/rooms", tags=["Rooms"])
 app.include_router(bet_router, prefix="/api/bets", tags=["Bets"])
 app.include_router(message_router, prefix="/api/messages", tags=["Messages"])
+app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
 
 @app.on_event("startup")
 async def startup_event():

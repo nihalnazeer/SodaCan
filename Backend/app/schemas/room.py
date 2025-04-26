@@ -15,4 +15,4 @@ class RoomResponse(BaseModel):
 
     class Config:
         from_attributes = True
-        use_enum_values = True  # Serialize RoomStatus to its value ('OPEN', 'CLOSED')
+        use_enum_values = True  
