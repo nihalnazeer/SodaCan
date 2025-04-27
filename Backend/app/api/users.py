@@ -114,3 +114,28 @@ async def logout(token: str = Depends(oauth2_scheme), db: Session = Depends(get_
         logger.error(f"Error during logout: {str(e)}")
         db.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.get("/me", response_model=UserResponse)
+async def get_user_profile(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    logger.debug(f"Fetching user profile: token={token[:10]}...")
+    try:
+        # Decode the token to get the user ID
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        if not user_id:
+            logger.debug("Token missing user_id")
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        user = db.query(User).filter(User.id == int(user_id)).first()
+        if not user:
+            logger.debug(f"User with id={user_id} not found")
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        logger.info(f"User profile fetched: id={user.id}")
+        return user
+    except JWTError as e:
+        logger.error(f"JWT error during profile fetch: {str(e)}")
+        raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception as e:
+        logger.error(f"Error fetching user profile: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
