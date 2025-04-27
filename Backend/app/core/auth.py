@@ -9,6 +9,7 @@ from app.models.refresh_token import RefreshToken
 from dotenv import load_dotenv
 import os
 import logging
+from sqlalchemy import func  # Added for func.now()
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -86,7 +87,7 @@ async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
         db_token = db.query(RefreshToken).filter(
             RefreshToken.token == refresh_token,
             RefreshToken.user_id == int(user_id),
-            RefreshToken.expires_at > datetime.utcnow()
+            RefreshToken.expires_at > func.now()  # Fixed: Use SQLAlchemy's func.now()
         ).first()
         if not db_token:
             logger.debug("Refresh token invalid or expired")
@@ -107,5 +108,5 @@ async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
             "token_type": "bearer"
         }
     except JWTError as e:
-        logger.debug(f"JWT error in refresh:18: {str(e)}")
+        logger.debug(f"JWT error in refresh: {str(e)}")
         raise HTTPException(status_code=401, detail="Invalid refresh token")

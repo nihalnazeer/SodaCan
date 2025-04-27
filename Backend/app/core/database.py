@@ -5,7 +5,8 @@ from app.config import settings
 
 Base = declarative_base()
 
-engine = create_engine(settings.database_url, echo=settings.debug)
+DATABASE_URL = "postgresql://postgres.jadorvadbofilfgtxgxj:nihalnazeer@aws-0-ap-south-1.pooler.supabase.com:6543/postgres"
+engine = create_engine(DATABASE_URL, echo=settings.debug)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def init_db():

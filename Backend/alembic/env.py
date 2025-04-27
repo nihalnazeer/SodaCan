@@ -17,10 +17,12 @@ if config.config_file_name is not None:
 
 # Add your model's MetaData object here for 'autogenerate' support
 from app.models.base import Base
+from app.models.user import User
 from app.models.room import Room
 from app.models.room_member import RoomMember
-from app.models.user import User
 from app.models.refresh_token import RefreshToken
+from app.models.bet import Bet
+from app.models.message import Message
 
 target_metadata = Base.metadata
 

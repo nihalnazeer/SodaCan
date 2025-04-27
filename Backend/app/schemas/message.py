@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
 
 class MessageCreate(BaseModel):
+    room_id: int
     content: str
 
 class MessageResponse(BaseModel):
@@ -11,7 +11,6 @@ class MessageResponse(BaseModel):
     user_id: int
     content: str
     created_at: datetime
-    username: Optional[str] = None  # Include username for display
 
     class Config:
-        orm_mode = True
+        from_attributes = True

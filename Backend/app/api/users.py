@@ -2,13 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.user import User
-from app.schemas.user import UserCreate, UserResponse
+from app.models.refresh_token import RefreshToken
+from app.schemas.user import UserCreate, UserResponse, Token, LoginRequest  # Added Token
 from app.core.auth import create_access_token, create_refresh_token, get_current_user
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, EmailStr, model_validator
 from passlib.context import CryptContext
 from typing import Union
 from sqlalchemy import func
+from jose import JWTError, jwt
+import os
 import logging
 
 router = APIRouter()
@@ -17,32 +20,22 @@ logging.basicConfig(filename='log.txt', level=logging.DEBUG, format='%(asctime)s
 logger = logging.getLogger(__name__)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
 def verify_password(plain_password, hashed_password):
     logger.debug(f"Verifying password: plain={plain_password[:3]}..., hashed={hashed_password[:10]}...")
     return pwd_context.verify(plain_password, hashed_password)
 
 def hash_password(password):
-    logger.debug(f"Hashing password: {password[:3]}...")
-    hashed = pwd_context.hash(password)
-    logger.debug(f"Hashed password: {hashed[:10]}...")
-    return hashed
-
-class LoginRequest(BaseModel):
-    email: Union[EmailStr, None] = None
-    username: Union[str, None] = None
-    password: str
-
-    class Config:
-        extra = "forbid"
-
-    @model_validator(mode="before")
-    @classmethod
-    def validate_one_of_email_or_username(cls, values):
-        logger.debug(f"Validating LoginRequest: {values}")
-        if not values.get("email") and not values.get("username"):
-            raise ValueError("Either email or username must be provided")
-        return values
+    logger.debug(f"Hashing password: {password[:3]}..., using backend: {pwd_context.default_scheme()}")
+    try:
+        hashed = pwd_context.hash(password)
+        logger.debug(f"Hashed password: {hashed[:10]}...")
+        return hashed
+    except Exception as e:
+        logger.error(f"Password hashing failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Password hashing failed")
 
 @router.post("/", response_model=UserResponse)
 async def create_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -62,9 +55,10 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
         return db_user
     except Exception as e:
         logger.error(f"Error creating user: {str(e)}")
+        db.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-@router.post("/login")
+@router.post("/login", response_model=Token)  # Fixed: Added response_model=Token
 async def login(form_data: LoginRequest, db: Session = Depends(get_db)):
     logger.debug(f"Login attempt: email={form_data.email}, username={form_data.username}, password={form_data.password[:3]}...")
     try:
@@ -89,11 +83,34 @@ async def login(form_data: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.post("/logout")
-async def logout(token: str = Depends(oauth2_scheme)):
+async def logout(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     logger.debug(f"User logging out: token={token[:10]}...")
     try:
-        # Optionally validate token (currently not enforced)
+        # Decode access token to get user ID
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        if not user_id:
+            logger.debug("Token missing user_id")
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        # Invalidate all refresh tokens for the user
+        refresh_tokens = db.query(RefreshToken).filter(
+            RefreshToken.user_id == int(user_id),
+            RefreshToken.expires_at > func.now()
+        ).all()
+        if not refresh_tokens:
+            logger.debug(f"No valid refresh tokens found for user_id={user_id}")
+            raise HTTPException(status_code=400, detail="No active refresh tokens found")
+        
+        for refresh_token in refresh_tokens:
+            db.delete(refresh_token)
+        db.commit()
+        logger.info(f"User {user_id} logged out: invalidated {len(refresh_tokens)} refresh tokens")
         return {"message": "Logged out successfully"}
+    except JWTError as e:
+        logger.error(f"JWT error during logout: {str(e)}")
+        raise HTTPException(status_code=401, detail="Invalid token")
     except Exception as e:
         logger.error(f"Error during logout: {str(e)}")
+        db.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")
