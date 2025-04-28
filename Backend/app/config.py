@@ -7,27 +7,26 @@ class Settings(BaseSettings):
     jwt_algorithm: str
     access_token_expire_minutes: int
     refresh_token_expire_days: int
-    supabase_rest_url: str
-    supabase_websocket_url: str
-    supabase_anon_key: str
+
+    # Pusher configuration
+    pusher_app_id: str
+    pusher_key: str
+    pusher_secret: str
+    pusher_cluster: str
+
     debug: bool = True
-    cors_origins: List[str] = ["http://localhost:3000"]
-    
+    cors_origins: str = "http://localhost:3000"  # Add this line to declare the field
+
+    # Then add the property to parse it
+    @property
+    def parsed_cors_origins(self) -> List[str]:
+        if isinstance(self.cors_origins, str):
+            return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        return ["http://localhost:3000"]
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
         extra = "forbid"
 
 settings = Settings()
-
-if settings.debug:
-    print(f"Database URL: {settings.database_url}")
-    print(f"JWT Secret Key: {settings.jwt_secret_key}")
-    print(f"JWT Algorithm: {settings.jwt_algorithm}")
-    print(f"Access Token Expiry (in minutes): {settings.access_token_expire_minutes}")
-    print(f"Refresh Token Expiry (in days): {settings.refresh_token_expire_days}")
-    print(f"Supabase REST URL: {settings.supabase_rest_url}")
-    print(f"Supabase WebSocket URL: {settings.supabase_websocket_url}")
-    print(f"Supabase Anon Key: {settings.supabase_anon_key}")
-    print(f"Debug Mode: {settings.debug}")
-    print(f"CORS Origins: {settings.cors_origins}")

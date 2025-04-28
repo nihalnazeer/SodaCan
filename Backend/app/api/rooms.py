@@ -14,6 +14,22 @@ logging.basicConfig(filename='log.txt', level=logging.DEBUG, format='%(asctime)s
 
 router = APIRouter()
 
+@router.get("/", response_model=list[RoomResponse])
+async def get_all_rooms(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """List all rooms (public and private) the user is a member of."""
+    try:
+        rooms = (
+            db.query(Room)
+            .join(RoomMember, Room.id == RoomMember.room_id)
+            .filter(RoomMember.user_id == user.id, Room.status == "OPEN")
+            .all()
+        )
+        logging.info(f"User {user.id} fetched {len(rooms)} rooms")
+        return rooms
+    except Exception as e:
+        logging.error(f"Error fetching rooms: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
 @router.post("/public", response_model=RoomResponse)
 async def create_public_room(room: RoomCreate, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Create a public room with a name, visible to all users."""
@@ -28,10 +44,17 @@ async def create_public_room(room: RoomCreate, user: User = Depends(get_current_
         db.add(db_room)
         db.commit()
         db.refresh(db_room)
-        logging.info(f"User {user.id} created public room {db_room.id}: {room.name}")
+
+        # Add creator to RoomMember
+        room_member = RoomMember(user_id=user.id, room_id=db_room.id)
+        db.add(room_member)
+        db.commit()
+
+        logging.info(f"User {user.id} created public room {db_room.id}: {room.name}, added as member")
         return db_room
     except Exception as e:
-        logging.error(f"Error creating public room: {str(e)}")
+        db.rollback()
+        logging.error(f"Error creating public room: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.post("/private", response_model=RoomResponse)
@@ -49,10 +72,17 @@ async def create_private_room(room: RoomCreate, user: User = Depends(get_current
         db.add(db_room)
         db.commit()
         db.refresh(db_room)
-        logging.info(f"User {user.id} created private room {db_room.id}: {room.name}")
+
+        # Add creator to RoomMember
+        room_member = RoomMember(user_id=user.id, room_id=db_room.id)
+        db.add(room_member)
+        db.commit()
+
+        logging.info(f"User {user.id} created private room {db_room.id}: {room.name}, token: {token}, added as member")
         return db_room
     except Exception as e:
-        logging.error(f"Error creating private room: {str(e)}")
+        db.rollback()
+        logging.error(f"Error creating private room: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.get("/public", response_model=list[RoomResponse])
@@ -63,7 +93,7 @@ async def get_public_rooms(user: User = Depends(get_current_user), db: Session =
         logging.info(f"User {user.id} fetched {len(rooms)} public rooms")
         return rooms
     except Exception as e:
-        logging.error(f"Error fetching public rooms: {str(e)}")
+        logging.error(f"Error fetching public rooms: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.post("/public/join/{id}", response_model=RoomResponse)
@@ -91,35 +121,27 @@ async def join_public_room(id: int, user: User = Depends(get_current_user), db: 
         # Add user to room
         room_member = RoomMember(user_id=user.id, room_id=room.id)
         db.add(room_member)
-        try:
-            db.commit()
-            db.refresh(room_member)
-        except Exception as db_e:
-            db.rollback()
-            logging.error(f"Database error joining public room {id}: {str(db_e)}")
-            raise HTTPException(status_code=500, detail="Failed to join room")
+        db.commit()
+        db.refresh(room_member)
         
-        # Send welcome message
+        # Send SodaBot welcome message
         welcome_message = Message(
             room_id=room.id,
-            user_id=user.id,  # Using the joining user's ID for simplicity
-            content=f"Welcome to the {room.name}"
+            user_id=None,  # No user ID to indicate it's from SodaBot
+            content=f"Welcome to {room.name}! Start chatting in the #chat channel.",
+            username="SodaBot"  # Explicitly set username
         )
         db.add(welcome_message)
-        try:
-            db.commit()
-            db.refresh(welcome_message)
-        except Exception as db_e:
-            db.rollback()
-            logging.error(f"Database error sending welcome message for room {id}: {str(db_e)}")
-            raise HTTPException(status_code=500, detail="Failed to send welcome message")
-        
-        logging.info(f"User {user.id} joined public room {id} and received welcome message {welcome_message.id}")
+        db.commit()
+        db.refresh(welcome_message)
+
+        logging.info(f"User {user.id} joined public room {id}, welcome message {welcome_message.id} sent")
         return room
     except HTTPException:
         raise
     except Exception as e:
-        logging.error(f"Unexpected error joining public room {id}: {str(e)}")
+        db.rollback()
+        logging.error(f"Unexpected error joining public room {id}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.get("/private", response_model=list[RoomResponse])
@@ -130,7 +152,7 @@ async def get_private_rooms(user: User = Depends(get_current_user), db: Session 
         logging.info(f"User {user.id} fetched {len(rooms)} private rooms")
         return rooms
     except Exception as e:
-        logging.error(f"Error fetching private rooms: {str(e)}")
+        logging.error(f"Error fetching private rooms: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.post("/private/join", response_model=RoomResponse)
@@ -162,20 +184,27 @@ async def join_private_room(body: dict, user: User = Depends(get_current_user), 
         # Add user to room
         room_member = RoomMember(user_id=user.id, room_id=room.id)
         db.add(room_member)
-        try:
-            db.commit()
-            db.refresh(room_member)
-        except Exception as db_e:
-            db.rollback()
-            logging.error(f"Database error joining private room {room.id}: {str(db_e)}")
-            raise HTTPException(status_code=500, detail="Failed to join room")
+        db.commit()
+        db.refresh(room_member)
         
-        logging.info(f"User {user.id} joined private room {room.id} via token {token}")
+        # Send SodaBot welcome message
+        welcome_message = Message(
+            room_id=room.id,
+            user_id=None,  # No user ID to indicate it's from SodaBot
+            content=f"Welcome to {room.name}! Start chatting in the #chat channel.",
+            username="SodaBot"  # Explicitly set username
+        )
+        db.add(welcome_message)
+        db.commit()
+        db.refresh(welcome_message)
+
+        logging.info(f"User {user.id} joined private room {room.id} via token {token}, welcome message {welcome_message.id} sent")
         return room
     except HTTPException:
         raise
     except Exception as e:
-        logging.error(f"Unexpected error joining private room with token {token}: {str(e)}")
+        db.rollback()
+        logging.error(f"Unexpected error joining private room with token {token}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.get("/search/{token}", response_model=RoomResponse)
@@ -189,7 +218,7 @@ async def search_private_room(token: str, db: Session = Depends(get_db)):
         logging.info(f"Searched private room with token {token}")
         return room
     except Exception as e:
-        logging.error(f"Error searching private room with token {token}: {str(e)}")
+        logging.error(f"Error searching private room with token {token}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.delete("/public/{id}")
@@ -211,7 +240,7 @@ async def delete_public_room(id: int, user: User = Depends(get_current_user), db
         logging.info(f"User {user.id} deleted public room {id}")
         return {"message": "Public room deleted successfully"}
     except Exception as e:
-        logging.error(f"Error deleting public room {id}: {str(e)}")
+        logging.error(f"Error deleting public room {id}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.delete("/private/{token}")
@@ -233,5 +262,5 @@ async def delete_private_room(token: str, user: User = Depends(get_current_user)
         logging.info(f"User {user.id} deleted private room with token {token}")
         return {"message": "Private room deleted successfully"}
     except Exception as e:
-        logging.error(f"Error deleting private room with token {token}: {str(e)}")
+        logging.error(f"Error deleting private room with token {token}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
