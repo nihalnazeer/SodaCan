@@ -84,7 +84,7 @@ async def create_private_room(room: RoomCreate, user: User = Depends(get_current
         logging.error(f"Error creating private room: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-@router.get("/public", response_model=list[RoomResponse])
+@router.get("/public/view", response_model=list[RoomResponse])
 async def get_public_rooms(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """List all public, open rooms."""
     try:

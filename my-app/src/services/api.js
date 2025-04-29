@@ -40,14 +40,14 @@ apiClient.interceptors.response.use(
 
 const api = {
   login: (data) => apiClient.post('/users/login', data).then((res) => res.data),
-  register: (data) => apiClient.post('/users/register', data).then((res) => res.data),
+  register: (data) => apiClient.post('/users/', data).then((res) => res.data),
   getUserProfile: () => apiClient.get('/users/me').then((res) => res.data),
   logout: () => apiClient.post('/users/logout').then((res) => res.data),
   createPublicRoom: (data) => apiClient.post('/rooms/public', data).then((res) => res.data),
   createPrivateRoom: (data) => apiClient.post('/rooms/private', data).then((res) => res.data),
   joinPublicRoom: (roomId) => apiClient.post(`/rooms/public/join/${roomId}`).then((res) => res.data),
   joinPrivateRoom: (roomToken) => apiClient.post('/rooms/private/join', { token: roomToken }).then((res) => res.data),
-  getPublicRooms: () => apiClient.get('/rooms/public').then((res) => res.data),
+  getPublicRooms: () => apiClient.get('/rooms/public/view').then((res) => res.data),
   getPrivateRooms: () => apiClient.get('/rooms/private').then((res) => res.data),
   getAllRooms: () => apiClient.get('/rooms').then((res) => res.data),
   sendMessage: (data) => apiClient.post('/messages', data).then((res) => res.data),

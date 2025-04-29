@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
-from typing import Dict
+from typing import Dict, List, Optional
 import logging
 import json
 from pusher import Pusher
@@ -97,6 +97,8 @@ async def send_message(
         )
         logger.debug(f"Pusher trigger response for room-{message.room_id}: {pusher_response}")
 
+        # Set username in response
+        db_message.username = user.username
         return db_message
     except HTTPException as he:
         db.rollback()
@@ -107,7 +109,7 @@ async def send_message(
         logger.error(f"Unexpected error in send_message: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to send message: {str(e)}")
 
-@router.get("/room/{room_id}", response_model=list[MessageResponse])
+@router.get("/room/{room_id}", response_model=List[MessageResponse])
 async def get_room_messages(
     room_id: int,
     user: User = Depends(get_current_user),
@@ -136,11 +138,16 @@ async def get_room_messages(
             Message.created_at.asc()
         ).all()
         
-        # Ensure created_at is not None for each message
+        # Ensure created_at is not None and set username
         for message in messages:
             if message.created_at is None:
                 message.created_at = datetime.now(timezone.utc)
                 db.add(message)
+            if message.user_id is None:
+                message.username = "SodaBot"  # System messages
+            else:
+                user = db.query(User).filter(User.id == message.user_id).first()
+                message.username = user.username if user else "Unknown"
         db.commit()
         
         logger.info(f"Retrieved {len(messages)} messages for room {room_id}")
@@ -188,6 +195,7 @@ async def send_test_message(
             f"room-{test_message.room_id}",
             "new-message",
             {
+                "id": None,  # Test messages don't have a DB ID
                 "test_message": test_message.message,
                 "room_id": test_message.room_id,
                 "user_id": None,

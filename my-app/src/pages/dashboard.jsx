@@ -24,7 +24,9 @@ function Dashboard() {
   const [toast, setToast] = useState(null);
   const [isRoomMember, setIsRoomMember] = useState(false);
   const [roomMembers, setRoomMembers] = useState([]);
-  const [userMap, setUserMap] = useState({}); // Map user_id to username
+  const [userMap, setUserMap] = useState({});
+  const [showPublicRooms, setShowPublicRooms] = useState(false);
+  const [publicRooms, setPublicRooms] = useState([]);
   const pusherRef = useRef(null);
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
@@ -78,7 +80,6 @@ function Dashboard() {
         try {
           const members = await api.getRoomMembers(room.id);
           setRoomMembers(members);
-          // Update userMap with room members
           const newUserMap = members.reduce((acc, member) => {
             acc[member.id] = member.username;
             return acc;
@@ -91,6 +92,60 @@ function Dashboard() {
       maintainInputFocus();
     },
     [rooms, checkMembership, maintainInputFocus]
+  );
+
+  const handlePublicRoomClick = useCallback(
+    async (room) => {
+      setActiveRoom(room.name);
+      setActiveChannel('welcome');
+      setShowSidebar(true);
+      setMessages([]);
+      setShowPublicRooms(false);
+      await checkMembership(room.id);
+      try {
+        const members = await api.getRoomMembers(room.id);
+        setRoomMembers(members);
+        const newUserMap = members.reduce((acc, member) => {
+          acc[member.id] = member.username;
+          return acc;
+        }, {});
+        setUserMap((prev) => ({ ...prev, ...newUserMap }));
+      } catch (err) {
+        console.error('Failed to fetch room members:', err);
+      }
+      maintainInputFocus();
+    },
+    [checkMembership, maintainInputFocus]
+  );
+
+  const handleJoinPublicRoom = useCallback(
+    async (roomId) => {
+      setLoading(true);
+      try {
+        await api.joinPublicRoom(roomId);
+        const newRoom = publicRooms.find((r) => r.id === roomId);
+        setRooms((prev) => [...prev, { ...newRoom, type: 'public' }]);
+        setChannels((prev) => ({ ...prev, [newRoom.name]: ['welcome', 'chat'] }));
+        setIsRoomMember(true);
+        showToast('Joined public room successfully!');
+        const messages = await api.getRoomMessages(roomId);
+        setMessages(messages || []);
+        scrollToBottom();
+        // Refresh joined rooms
+        const fetchedRooms = await api.getAllRooms();
+        const roomsWithType = fetchedRooms.map((room) => ({
+          ...room,
+          type: room.is_public ? 'public' : 'private',
+        }));
+        setRooms(roomsWithType);
+      } catch (err) {
+        console.error('Join public room error:', err);
+        setError(err.message || 'Failed to join room');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [publicRooms, showToast, scrollToBottom]
   );
 
   const handleChannelClick = useCallback((channel) => {
@@ -274,6 +329,29 @@ function Dashboard() {
     }
   }, [activeRoom, maintainInputFocus]);
 
+  const togglePublicRooms = useCallback(async () => {
+    setShowPublicRooms((prev) => !prev);
+    if (!showPublicRooms) {
+      setLoading(true);
+      try {
+        const fetchedPublicRooms = await api.getPublicRooms();
+        setPublicRooms(fetchedPublicRooms);
+      } catch (err) {
+        console.error('Fetch public rooms error:', err);
+        setError(err.message || 'Failed to fetch public rooms');
+      } finally {
+        setLoading(false);
+      }
+    }
+    maintainInputFocus();
+  }, [showPublicRooms, maintainInputFocus]);
+
+  const toggleJoinedRooms = useCallback(() => {
+    setShowSidebar((prev) => !prev);
+    setShowPublicRooms(false);
+    maintainInputFocus();
+  }, [maintainInputFocus]);
+
   useEffect(() => {
     const fetchUserAndRooms = async () => {
       setLoading(true);
@@ -350,10 +428,9 @@ function Dashboard() {
           return;
         }
         const fetchedMessages = await api.getRoomMessages(room.id);
-        // Map user_id to username using userMap
         const mappedMessages = fetchedMessages.map((msg) => ({
           ...msg,
-          username: userMap[msg.user_id] || 'Unknown'
+          username: msg.username || userMap[msg.user_id] || 'Unknown'
         }));
         setMessages(mappedMessages || []);
         setIsRoomMember(true);
@@ -596,6 +673,55 @@ function Dashboard() {
     </div>
   );
 
+  const PublicRoomsModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-zinc-900 rounded-lg p-6 w-full max-w-md border border-zinc-800 shadow-xl">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-zinc-200">Public Rooms</h2>
+          <button
+            onClick={() => setShowPublicRooms(false)}
+            className="text-zinc-400 hover:text-zinc-200"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="w-6 h-6"
+            >
+              <path d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="space-y-4 max-h-96 overflow-y-auto">
+          {loading ? (
+            <Spinner />
+          ) : publicRooms.length === 0 ? (
+            <p className="text-zinc-400">No public rooms available.</p>
+          ) : (
+            publicRooms.map((room) => (
+              <div key={room.id} className="flex items-center justify-between p-3 bg-zinc-800 rounded-md">
+                <div className="flex-1 cursor-pointer" onClick={() => handlePublicRoomClick(room)}>
+                  <span className="text-zinc-200">{room.name}</span>
+                  <p className="text-xs text-zinc-400">{room.description || 'Join this community!'}</p>
+                </div>
+                {!rooms.some((r) => r.id === room.id) && (
+                  <button
+                    onClick={() => handleJoinPublicRoom(room.id)}
+                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded-md text-sm text-zinc-200"
+                  >
+                    Join
+                  </button>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   const defaultOptions = [
     { name: 'Shop', action: () => alert('Visit the Shop!') },
     { name: 'Community Events', action: () => alert('Check out community events!') },
@@ -745,22 +871,23 @@ function Dashboard() {
       <div className="flex flex-1 overflow-hidden">
         <div className="w-16 bg-zinc-900 flex flex-col items-center py-3 space-y-4 border-r border-zinc-800">
           <button
+            onClick={togglePublicRooms}
             className="relative w-10 h-10 rounded-lg flex items-center justify-center text-zinc-200 text-lg font-semibold bg-gradient-to-br from-zinc-800 to-zinc-600 border border-zinc-700 shadow-sm hover:shadow-md transition-all duration-300"
-            title="Home"
+            title="View Public Rooms"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="w-6 h-6"
-            >
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
+            🌐
             <span className="absolute hidden group-hover:block bg-zinc-800 text-zinc-200 text-xs rounded p-1 -top-10 left-0 whitespace-nowrap z-10">
-              Home
+              View Public Rooms
+            </span>
+          </button>
+          <button
+            onClick={toggleJoinedRooms}
+            className="relative w-10 h-10 rounded-lg flex items-center justify-center text-zinc-200 text-lg font-semibold bg-gradient-to-br from-zinc-800 to-zinc-600 border border-zinc-700 shadow-sm hover:shadow-md transition-all duration-300"
+            title="View Joined Rooms"
+          >
+            🔑
+            <span className="absolute hidden group-hover:block bg-zinc-800 text-zinc-200 text-xs rounded p-1 -top-10 left-0 whitespace-nowrap z-10">
+              View Joined Rooms
             </span>
           </button>
           {rooms.map((room) => (
@@ -1124,6 +1251,7 @@ function Dashboard() {
       </div>
 
       {showModal && <RoomModal />}
+      {showPublicRooms && <PublicRoomsModal />}
     </div>
   );
 }
