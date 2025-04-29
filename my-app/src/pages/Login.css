@@ -1,0 +1,133 @@
+/* Enhance input fields */
+input[type="email"], 
+input[type="password"] {
+  transition: all 0.3s ease;
+  background: linear-gradient(to bottom, rgba(24, 24, 27, 0.9), rgba(9, 9, 11, 0.8));
+  border: 1px solid rgba(63, 63, 70, 0.8);
+}
+
+input[type="email"]:focus, 
+input[type="password"]:focus {
+  background: linear-gradient(to bottom, rgba(24, 24, 27, 1), rgba(9, 9, 11, 0.9));
+  border-color: rgba(113, 113, 122, 0.8);
+  box-shadow: 0 0 0 2px rgba(82, 82, 91, 0.25);
+}/* Login.css - Styles for the Login page */
+
+/* Enhanced background with multiple gradient effects */
+.bg-gradient-to-b {
+  background: 
+    /* Radial gradient for spotlight effect */
+    radial-gradient(circle at 15% 15%, rgba(161, 161, 170, 0.08), transparent 35%),
+    /* Subtle diagonal accent */
+    linear-gradient(135deg, rgba(113, 113, 122, 0.05) 0%, transparent 50%),
+    /* Main gradient */
+    linear-gradient(to bottom, #09090b, #18181b 80%, #27272a);
+  
+  /* Add noise texture */
+  position: relative;
+}
+
+.bg-gradient-to-b::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.3;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
+/* Add animation for the bubbles */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-15px);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(0px);
+    opacity: 0.3;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+}
+
+.bubble {
+  animation: float 6s ease-in-out infinite;
+  filter: blur(8px);
+  background: radial-gradient(circle at 30% 30%, rgba(161, 161, 170, 0.4), rgba(63, 63, 70, 0.1));
+}
+
+.bubble:nth-child(1) {
+  animation-delay: 0s;
+  animation-duration: 8s;
+}
+
+.bubble:nth-child(2) {
+  animation-delay: 2s;
+  animation-duration: 10s;
+}
+
+.bubble:nth-child(3) {
+  animation-delay: 4s;
+  animation-duration: 7s;
+}
+
+/* Language transition animation */
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  20%, 80% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* Add subtle shadow to the form */
+.shadow-lg {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhance form with subtle inner glow and gradient */
+.bg-zinc-900 {
+  background: linear-gradient(145deg, #18181b, #27272a);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  position: relative;
+  z-index: 10;
+  border: 1px solid rgba(63, 63, 70, 0.8);
+}
+
+/* Add subtle glow to form on hover */
+.bg-zinc-900:hover {
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.07),
+              0 10px 25px -5px rgba(0, 0, 0, 0.3), 
+              0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(82, 82, 91, 0.8);
+  transition: all 0.3s ease;
+}
