@@ -28,9 +28,11 @@ function Login() {
       }
       const credentials = { email, password };
       const response = await api.login(credentials);
+      console.log('Login response:', response);
       localStorage.setItem('access_token', response.access_token);
       localStorage.setItem('refresh_token', response.refresh_token);
       localStorage.setItem('username', response.username || 'User');
+      console.log('Stored access_token:', localStorage.getItem('access_token'));
       navigate('/dashboard');
     } catch (err) {
       console.error('Login error:', err);

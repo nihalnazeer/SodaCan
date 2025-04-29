@@ -23,6 +23,8 @@ function Dashboard() {
   const [messageInput, setMessageInput] = useState('');
   const [toast, setToast] = useState(null);
   const [isRoomMember, setIsRoomMember] = useState(false);
+  const [roomMembers, setRoomMembers] = useState([]);
+  const [userMap, setUserMap] = useState({}); // Map user_id to username
   const pusherRef = useRef(null);
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
@@ -73,6 +75,18 @@ function Dashboard() {
       const room = rooms.find((r) => r.name === roomName);
       if (room?.id) {
         await checkMembership(room.id);
+        try {
+          const members = await api.getRoomMembers(room.id);
+          setRoomMembers(members);
+          // Update userMap with room members
+          const newUserMap = members.reduce((acc, member) => {
+            acc[member.id] = member.username;
+            return acc;
+          }, {});
+          setUserMap((prev) => ({ ...prev, ...newUserMap }));
+        } catch (err) {
+          console.error('Failed to fetch room members:', err);
+        }
       }
       maintainInputFocus();
     },
@@ -220,17 +234,21 @@ function Dashboard() {
       setError('No valid room selected');
       return;
     }
+    setLoading(true);
     try {
       const messageData = {
         room_id: room.id,
         content: messageInput,
       };
       await api.sendMessage(messageData);
+      console.log('Message sent successfully to room:', room.id);
       setMessageInput('');
       maintainInputFocus();
     } catch (err) {
-      console.error('Send message error:', err);
-      setError(err.message || 'Failed to send message');
+      console.error('Send message error:', err.response?.status, err.response?.data, err.message);
+      setError(err.response?.data?.detail || 'Failed to send message');
+    } finally {
+      setLoading(false);
     }
   }, [activeRoom, messageInput, rooms, maintainInputFocus]);
 
@@ -261,41 +279,55 @@ function Dashboard() {
       setLoading(true);
       try {
         const token = localStorage.getItem('access_token');
+        console.log('Dashboard fetching with token:', token);
         if (!token) {
+          console.log('No token, redirecting to /');
           navigate('/');
           return;
         }
         const userData = await api.getUserProfile();
+        console.log('User profile:', userData);
         setUsername(userData.username || 'User');
         setCoins(userData.coins || 0);
         localStorage.setItem('username', userData.username || 'User');
         localStorage.setItem('coins', userData.coins || 0);
+        setUserMap((prev) => ({ ...prev, [userData.id]: userData.username }));
         setShowCoinNotification(true);
 
-        const fetchedRooms = await api.getAllRooms();
-        if (!fetchedRooms || fetchedRooms.length === 0) {
-          setError('No rooms available. Create or join a room to start.');
+        try {
+          const fetchedRooms = await api.getAllRooms();
+          console.log('Fetched rooms:', fetchedRooms);
+          if (!fetchedRooms || fetchedRooms.length === 0) {
+            setError('No rooms joined. Create or join a room to start.');
+            setRooms([]);
+            setChannels({});
+            setActiveRoom(null);
+            setActiveChannel('welcome');
+          } else {
+            const roomsWithType = fetchedRooms.map((room) => ({
+              ...room,
+              type: room.is_public ? 'public' : 'private',
+            }));
+            setRooms(roomsWithType);
+            const newChannels = roomsWithType.reduce((acc, room) => {
+              acc[room.name] = ['welcome', 'chat'];
+              return acc;
+            }, {});
+            setChannels(newChannels);
+            setActiveRoom(roomsWithType[0].name);
+            setActiveChannel('welcome');
+            await checkMembership(roomsWithType[0].id);
+          }
+        } catch (roomErr) {
+          console.error('Room fetch error:', roomErr);
+          setError('Failed to load rooms. Please try again.');
           setRooms([]);
           setChannels({});
           setActiveRoom(null);
           setActiveChannel('welcome');
-        } else {
-          const roomsWithType = fetchedRooms.map((room) => ({
-            ...room,
-            type: room.is_public ? 'public' : 'private',
-          }));
-          setRooms(roomsWithType);
-          const newChannels = roomsWithType.reduce((acc, room) => {
-            acc[room.name] = ['welcome', 'chat'];
-            return acc;
-          }, {});
-          setChannels(newChannels);
-          setActiveRoom(roomsWithType[0].name);
-          setActiveChannel('welcome');
-          await checkMembership(roomsWithType[0].id);
         }
       } catch (err) {
-        console.error('Dashboard error:', err);
+        console.error('Dashboard error:', err.response?.status, err.response?.data, err.message);
         setError(err.message || 'Failed to load data');
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
@@ -318,7 +350,12 @@ function Dashboard() {
           return;
         }
         const fetchedMessages = await api.getRoomMessages(room.id);
-        setMessages(fetchedMessages || []);
+        // Map user_id to username using userMap
+        const mappedMessages = fetchedMessages.map((msg) => ({
+          ...msg,
+          username: userMap[msg.user_id] || 'Unknown'
+        }));
+        setMessages(mappedMessages || []);
         setIsRoomMember(true);
         scrollToBottom();
       } catch (err) {
@@ -339,7 +376,7 @@ function Dashboard() {
     } else {
       setMessages([]);
     }
-  }, [activeRoom, activeChannel, rooms, isRoomMember, scrollToBottom]);
+  }, [activeRoom, activeChannel, rooms, isRoomMember, scrollToBottom, userMap]);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -373,7 +410,7 @@ function Dashboard() {
             user_id: data.user_id,
             content: data.content || data.test_message,
             created_at: data.created_at || new Date().toISOString(),
-            username: data.username || 'Unknown',
+            username: data.username || userMap[data.user_id] || 'Unknown'
           },
         ];
       });
@@ -394,7 +431,7 @@ function Dashboard() {
         pusherRef.current = null;
       }
     };
-  }, [activeRoom, rooms, isRoomMember, scrollToBottom]);
+  }, [activeRoom, rooms, isRoomMember, scrollToBottom, userMap]);
 
   useEffect(() => {
     scrollToBottom();
@@ -417,7 +454,7 @@ function Dashboard() {
         value={messageInput}
         onChange={handleMessageInputChange}
         onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-        disabled={!activeRoom || !isRoomMember}
+        disabled={!activeRoom || !isRoomMember || loading}
         className="w-full bg-transparent rounded-md px-4 py-3 text-zinc-200 border-none focus:outline-none focus:ring-1 focus:ring-zinc-600 disabled:opacity-50"
         ref={messageInputRef}
       />
@@ -458,7 +495,7 @@ function Dashboard() {
         <button
           onClick={sendMessage}
           className="ml-1 px-3 py-1 bg-gradient-to-r from-zinc-700 to-zinc-600 rounded-md text-zinc-200 hover:shadow-md transition-all duration-300 disabled:opacity-50"
-          disabled={!activeRoom || !isRoomMember || !messageInput.trim()}
+          disabled={!activeRoom || !isRoomMember || !messageInput.trim() || loading}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -474,7 +511,7 @@ function Dashboard() {
         </button>
       </div>
     </div>
-  ), [activeRoom, activeChannel, isRoomMember, messageInput, handleMessageInputChange, sendMessage]);
+  ), [activeRoom, activeChannel, isRoomMember, messageInput, handleMessageInputChange, sendMessage, loading]);
 
   const RoomModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -681,7 +718,7 @@ function Dashboard() {
               className="w-5 h-5"
             >
               <circle cx="12" cy="12" r="3"></circle>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l-.06-.06a2 2 0 0 1 2.83 0 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l-.06-.06a2 2 0 0 1 2.83 0 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
           </button>
           <button
@@ -1013,7 +1050,7 @@ function Dashboard() {
                             <div className="flex-1">
                               <div className="flex items-center">
                                 <span className="font-semibold text-zinc-200 mr-2">
-                                  {msg.username || 'Unknown'}
+                                  {msg.user_id === null ? 'SodaBot' : (msg.username || 'Unknown')}
                                 </span>
                                 <span className="text-xs text-zinc-500">
                                   {new Date(msg.created_at).toLocaleString()}
@@ -1046,7 +1083,7 @@ function Dashboard() {
 
         <div className="w-60 bg-zinc-900 border-l border-zinc-800 hidden md:block">
           <div className="h-12 border-b border-zinc-800 px-4 flex items-center justify-between">
-            <span className="text-xs font-semibold text-zinc-400">MEMBERS — 2</span>
+            <span className="text-xs font-semibold text-zinc-400">MEMBERS — {roomMembers.length}</span>
             <button className="w-6 h-6 flex items-center justify-center text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1062,38 +1099,26 @@ function Dashboard() {
             </button>
           </div>
           <div className="p-2">
-            <div className="text-xs font-semibold text-zinc-400 px-2 py-1 mt-2">ONLINE — 2</div>
-            <div className="p-2 rounded-md hover:bg-zinc-800 flex items-center cursor-pointer transition-all duration-300">
-              <div className="relative mr-3">
-                <div className="w-8 h-8 rounded-md bg-gradient-to-br from-zinc-700 to-zinc-500 flex items-center justify-center text-zinc-200 font-semibold">
-                  S
+            <div className="text-xs font-semibold text-zinc-400 px-2 py-1 mt-2">ONLINE — {roomMembers.length}</div>
+            {roomMembers.map((member) => (
+              <div
+                key={member.id}
+                className="p-2 rounded-md hover:bg-zinc-800 flex items-center cursor-pointer transition-all duration-300"
+              >
+                <div className="relative mr-3">
+                  <div className="w-8 h-8 rounded-md bg-gradient-to-br from-zinc-800 to-zinc-600 flex items-center justify-center text-zinc-200 font-semibold">
+                    {member.username.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-zinc-900"></div>
                 </div>
-                <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-zinc-900"></div>
-              </div>
-              <div className="text-sm group relative">
-                SodaBot
-                <div className="ml-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-medium rounded bg-zinc-800 text-zinc-300">
-                  BOT
+                <div className="text-sm group relative">
+                  {member.username}
+                  <span className="absolute hidden group-hover:block bg-zinc-800 text-zinc-200 text-xs rounded p-1 -top-8 left-0 whitespace-nowrap z-10">
+                    {member.username}
+                  </span>
                 </div>
-                <span className="absolute hidden group-hover:block bg-zinc-800 text-zinc-200 text-xs rounded p-1 -top-8 left-0 whitespace-nowrap z-10">
-                  SodaBot
-                </span>
               </div>
-            </div>
-            <div className="p-2 rounded-md hover:bg-zinc-800 flex items-center cursor-pointer transition-all duration-300">
-              <div className="relative mr-3">
-                <div className="w-8 h-8 rounded-md bg-gradient-to-br from-zinc-800 to-zinc-600 flex items-center justify-center text-zinc-200 font-semibold">
-                  {username.charAt(0).toUpperCase()}
-                </div>
-                <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-zinc-900"></div>
-              </div>
-              <div className="text-sm group relative">
-                {username}
-                <span className="absolute hidden group-hover:block bg-zinc-800 text-zinc-200 text-xs rounded p-1 -top-8 left-0 whitespace-nowrap z-10">
-                  {username}
-                </span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

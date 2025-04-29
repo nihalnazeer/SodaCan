@@ -8,9 +8,10 @@ from app.core.database import get_db
 from app.models.message import Message
 from app.models.user import User
 from app.models.room import Room
-from app.schemas.message import MessageCreate, MessageResponse
+from app.schemas.message import MessageCreate, MessageResponse, TestMessageCreate
 from app.core.auth import get_current_user
-from app.core.pusher import get_pusher
+from app.core.pusher import get_pusher, PusherService
+from datetime import datetime, timezone
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ async def send_message(
     message: MessageCreate,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-    pusher: Pusher = Depends(get_pusher)
+    pusher_service: PusherService = Depends(get_pusher)
 ):
     """Send a message to a room."""
     try:
@@ -67,18 +68,22 @@ async def send_message(
             logger.warning(f"User {user.id} not a member of room {message.room_id}")
             raise HTTPException(status_code=403, detail="You are not a member of this room")
         
+        # Create message with explicit created_at
         db_message = Message(
             room_id=message.room_id,
             user_id=user.id,
             content=message.content,
-            username=user.username
+            created_at=datetime.now(timezone.utc)
         )
         db.add(db_message)
         db.commit()
         db.refresh(db_message)
         logger.info(f"Message created: {db_message.id}")
 
-        pusher_response = pusher.trigger(
+        # Ensure created_at is not None
+        created_at = db_message.created_at or datetime.now(timezone.utc)
+        
+        pusher_response = pusher_service.client.trigger(
             f"room-{message.room_id}",
             "new-message",
             {
@@ -86,8 +91,8 @@ async def send_message(
                 "room_id": db_message.room_id,
                 "user_id": db_message.user_id,
                 "content": db_message.content,
-                "created_at": db_message.created_at.isoformat(),
-                "username": db_message.username or user.username
+                "created_at": created_at.isoformat(),
+                "username": user.username  # Send username for frontend display
             }
         )
         logger.debug(f"Pusher trigger response for room-{message.room_id}: {pusher_response}")
@@ -131,6 +136,13 @@ async def get_room_messages(
             Message.created_at.asc()
         ).all()
         
+        # Ensure created_at is not None for each message
+        for message in messages:
+            if message.created_at is None:
+                message.created_at = datetime.now(timezone.utc)
+                db.add(message)
+        db.commit()
+        
         logger.info(f"Retrieved {len(messages)} messages for room {room_id}")
         return messages
 
@@ -166,23 +178,25 @@ async def websocket_messages(
 
 @router.post("/send-test-message")
 async def send_test_message(
-    room_id: int,
-    message: str,
-    pusher: Pusher = Depends(get_pusher)
+    test_message: TestMessageCreate,
+    pusher_service: PusherService = Depends(get_pusher)
 ):
     """Endpoint for testing Pusher messages (dev only)"""
     try:
-        pusher_response = pusher.trigger(
-            f"room-{room_id}",
+        created_at = datetime.now(timezone.utc)
+        pusher_response = pusher_service.client.trigger(
+            f"room-{test_message.room_id}",
             "new-message",
             {
-                "test_message": message,
-                "room_id": room_id,
+                "test_message": test_message.message,
+                "room_id": test_message.room_id,
+                "user_id": None,
+                "created_at": created_at.isoformat(),
                 "username": "TestBot"
             }
         )
-        logger.info(f"Test message sent to room {room_id}: {pusher_response}")
+        logger.info(f"Test message sent to room {test_message.room_id}: {pusher_response}")
         return {"status": "Test message sent"}
     except Exception as e:
         logger.error(f"Error sending test message: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to send test message")
+        raise HTTPException(status_code=500, detail=f"Failed to send test message: {str(e)}")

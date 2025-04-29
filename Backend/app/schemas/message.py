@@ -14,3 +14,7 @@ class MessageResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class TestMessageCreate(BaseModel):
+    room_id: int
+    message: str
