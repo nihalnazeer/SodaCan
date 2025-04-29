@@ -1,12 +1,12 @@
-/* Login.css - Styles for the Login page with gaming aesthetic */
+/* Register.css - Styles for the Register page with gaming aesthetic */
 
 /* Enhanced background with multiple gradient effects and gaming vibe */
 .bg-gradient-to-b {
     background:
       /* Radial gradient for spotlight effect */
-      radial-gradient(circle at 15% 15%, rgba(255, 50, 50, 0.08), transparent 35%),
+      radial-gradient(circle at 85% 15%, rgba(255, 50, 50, 0.08), transparent 35%),
       /* Subtle red-tinted diagonal accent */
-      linear-gradient(135deg, rgba(255, 30, 30, 0.05) 0%, transparent 50%),
+      linear-gradient(225deg, rgba(255, 30, 30, 0.05) 0%, transparent 50%),
       /* Main gradient with subtle red tint at bottom */
       linear-gradient(to bottom, #09090b, #18181b 80%, rgba(39, 29, 29, 1));
     position: relative;
@@ -85,30 +85,34 @@
     background: radial-gradient(circle at 30% 30%, rgba(255, 70, 70, 0.2), rgba(63, 63, 70, 0.1));
   }
   
-  /* Sports and game icons animation */
-  @keyframes pulse-rotate {
-    0% {
-      transform: scale(1) rotate(0deg);
-      box-shadow: 0 0 0 rgba(255, 80, 80, 0);
-    }
-    50% {
-      transform: scale(1.05) rotate(5deg);
-      box-shadow: 0 0 15px rgba(255, 80, 80, 0.3);
-    }
-    100% {
-      transform: scale(1) rotate(0deg);
-      box-shadow: 0 0 0 rgba(255, 80, 80, 0);
-    }
+  /* Animated logo */
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
   
-  .icon-pulse {
-    animation: pulse-rotate 5s ease-in-out infinite;
+  .animated-logo {
+    background: linear-gradient(-45deg, #313134, #414144, #222224, #5a5a5e);
+    background-size: 400% 400%;
+    animation: gradientShift 6s ease infinite;
+    transition: all 0.3s ease;
   }
   
-  .icon-pulse:nth-child(1) { animation-delay: 0s; }
-  .icon-pulse:nth-child(2) { animation-delay: 1s; }
-  .icon-pulse:nth-child(3) { animation-delay: 2s; }
-  .icon-pulse:nth-child(4) { animation-delay: 3s; }
+  .animated-logo:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -5px rgba(201, 38, 38, 0.3);
+  }
+  
+  .logo-pulse {
+    animation: logoPulse 3s ease-in-out infinite;
+  }
+  
+  @keyframes logoPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
   
   /* Feature highlight animation */
   @keyframes feature-glow {
@@ -137,70 +141,14 @@
     animation: feature-glow 3s infinite ease-in-out;
   }
   
-  /* Icon animations */
-  @keyframes iconFloat {
-    0% {
-      transform: translateY(0) rotate(0deg);
-      opacity: 0.8;
-    }
-    50% {
-      transform: translateY(-10px) rotate(5deg);
-      opacity: 1;
-    }
-    100% {
-      transform: translateY(0) rotate(0deg);
-      opacity: 0.8;
-    }
+  /* Logo animation */
+  .logo-container {
+    transition: all 0.3s ease;
   }
   
-  .icon-container {
-    position: relative;
-    transition: all 0.4s ease;
-  }
-  
-  .icon-container:hover {
-    transform: scale(1.05);
-  }
-  
-  .icon-container:hover .icon-glow {
-    opacity: 0.8;
-  }
-  
-  .icon-float {
-    animation: iconFloat 6s ease-in-out infinite;
-  }
-  
-  .icon-float:nth-child(1) {
-    animation-delay: 0s;
-    animation-duration: 6s;
-  }
-  
-  .icon-float:nth-child(2) {
-    animation-delay: 1s;
-    animation-duration: 7s;
-  }
-  
-  .icon-float:nth-child(3) {
-    animation-delay: 2s;
-    animation-duration: 8s;
-  }
-  
-  .icon-float:nth-child(4) {
-    animation-delay: 3s;
-    animation-duration: 9s;
-  }
-  
-  .icon-glow {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: inherit;
-    box-shadow: 0 0 20px 5px rgba(255, 50, 50, 0.3);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: -1;
+  .logo-container:hover svg path {
+    stroke: rgba(255, 70, 70, 0.8);
+    transition: all 0.3s ease;
   }
   
   /* Enhanced form with gaming-styled inner glow and gradient */
@@ -225,7 +173,8 @@
   
   /* Gaming-styled input fields with subtle red accents */
   input[type="email"],
-  input[type="password"] {
+  input[type="password"],
+  input[type="text"] {
     transition: all 0.3s ease;
     background: linear-gradient(to bottom, rgba(24, 24, 27, 0.9), rgba(9, 9, 11, 0.8));
     border: 1px solid rgba(63, 63, 70, 0.8);
@@ -233,7 +182,8 @@
   }
   
   input[type="email"]:focus,
-  input[type="password"]:focus {
+  input[type="password"]:focus,
+  input[type="text"]:focus {
     background: linear-gradient(to bottom, rgba(24, 24, 27, 1), rgba(9, 9, 11, 0.9));
     border-color: rgba(255, 70, 70, 0.5);
     box-shadow: 0 0 0 2px rgba(255, 50, 50, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -246,17 +196,32 @@
     transition: all 0.3s ease;
   }
   
-  .button-glow:hover {
-    box-shadow: 0 0 20px rgba(255, 50, 50, 0.4);
+  /* Enhanced button effects */
+.button-glow {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: linear-gradient(145deg, #ef4444, #dc2626);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    border: none;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.button-glow:hover {
     transform: translateY(-2px);
-  }
-  
-  .button-glow:active {
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    background: linear-gradient(145deg, #f87171, #ef4444);
+}
+
+.button-glow:active {
     transform: translateY(1px);
-    box-shadow: 0 0 10px rgba(255, 50, 50, 0.3);
-  }
-  
-  .button-glow:before {
+    box-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);
+}
+
+.button-glow::before {
     content: '';
     position: absolute;
     top: -50%;
@@ -264,103 +229,155 @@
     width: 200%;
     height: 200%;
     background: linear-gradient(
-      to bottom right,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0) 40%,
-      rgba(255, 255, 255, 0.4) 50%,
-      rgba(255, 255, 255, 0) 60%,
-      rgba(255, 255, 255, 0) 100%
+        to bottom right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0) 30%,
+        rgba(255, 255, 255, 0.1) 45%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0) 100%
     );
-    transform: rotate(45deg);
-    transition: all 0.3s ease;
+    transform: rotate(30deg);
+    animation: buttonShine 3s infinite;
     opacity: 0;
-  }
-  
-  .button-glow:hover:before {
-    animation: shine 1.5s ease-in-out;
-  }
-  
-  @keyframes shine {
+}
+
+@keyframes buttonShine {
     0% {
-      left: -50%;
-      opacity: 0;
+        transform: rotate(30deg) translate(-30%, -30%);
+        opacity: 0;
     }
-    50% {
-      opacity: 1;
+    20% {
+        opacity: 0.5;
     }
     100% {
-      left: 150%;
-      opacity: 0;
+        transform: rotate(30deg) translate(30%, 30%);
+        opacity: 0;
     }
-  }
-  
-  /* Logo animation */
-  .logo-container {
-    transition: all 0.3s ease;
-  }
-  
-  .logo-container:hover svg path {
-    stroke: rgba(255, 70, 70, 0.8);
-    transition: all 0.3s ease;
-  }
-  
-  /* Animated gradient button with enhanced effects */
-  .animated-gradient-button {
-    background-size: 200% 200%;
-    background-image: linear-gradient(45deg, 
-      #333 0%, 
-      #444 25%, 
-      rgba(255, 50, 50, 0.5) 50%, 
-      #444 75%, 
-      #333 100%);
-    animation: gradient-shift 5s ease infinite;
-    position: relative;
-    z-index: 1;
-  }
-  
-  .animated-gradient-button::after {
+}
+
+.button-glow:hover::before {
+    animation: buttonShine 1.5s infinite;
+}
+
+/* Ripple effect */
+.button-glow::after {
     content: '';
     position: absolute;
-    inset: 0;
-    z-index: -1;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
     opacity: 0;
-    background: linear-gradient(45deg, 
-      rgba(255, 50, 50, 0.4), 
-      rgba(255, 120, 50, 0.4),
-      rgba(255, 50, 50, 0.4));
-    filter: blur(15px);
-    transition: opacity 0.3s ease;
-  }
-  
-  .animated-gradient-button:hover::after {
-    opacity: 1;
-  }
-  
-  @keyframes gradient-shift {
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+}
+
+.button-glow:focus:not(:active)::after {
+    animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
     0% {
-      background-position: 0% 50%;
+        transform: scale(0, 0);
+        opacity: 0.5;
     }
-    50% {
-      background-position: 100% 50%;
+    20% {
+        transform: scale(25, 25);
+        opacity: 0.3;
     }
     100% {
-      background-position: 0% 50%;
+        opacity: 0;
+        transform: scale(40, 40);
     }
-  }
-  
-  /* Pulsing helper text */
-  @keyframes subtle-pulse {
+}
+
+/* Loading spinner for button */
+.button-loading .button-text {
+    visibility: hidden;
+    opacity: 0;
+}
+
+.button-loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    border: 4px solid transparent;
+    border-top-color: white;
+    border-radius: 50%;
+    animation: button-loading-spinner 1s linear infinite;
+}
+
+@keyframes button-loading-spinner {
+    from {
+        transform: rotate(0turn);
+    }
+    to {
+        transform: rotate(1turn);
+    }
+}
+
+/* Error message styling */
+.error-message {
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 3px solid #ef4444;
+    animation: error-pulse 1.5s infinite;
+}
+
+@keyframes error-pulse {
     0% {
-      opacity: 0.7;
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.1);
     }
-    50% {
-      opacity: 1;
+    70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
     }
     100% {
-      opacity: 0.7;
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
     }
-  }
-  
-  .helper-text {
-    animation: subtle-pulse 3s infinite ease-in-out;
-  }
+}
+
+/* Success message styling */
+.success-message {
+    background: rgba(16, 185, 129, 0.1);
+    border-left: 3px solid #10b981;
+    animation: success-pulse 1.5s infinite;
+}
+
+@keyframes success-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.1);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+/* Final responsive adjustments */
+@media (max-width: 768px) {
+    .bg-gradient-to-b {
+        background:
+            radial-gradient(circle at 85% 15%, rgba(255, 50, 50, 0.08), transparent 35%),
+            linear-gradient(to bottom, #09090b, #18181b 80%, rgba(39, 29, 29, 1));
+    }
+    
+    .sodaclub-text {
+        font-size: 3.5rem;
+        padding: 0 15px;
+    }
+    
+    .can {
+        width: 100px;
+        height: 160px;
+        transform: rotate(-15deg) translateX(-30px);
+    }
+}

@@ -1,0 +1,40 @@
+/* RoomExplore.css - Styles for the Room Explore page, extending Dashboard.css */
+
+/* Reuse Dashboard.css variables */
+:root {
+    --bg-dark: rgba(9, 9, 11, 0.9);
+    --glass-dark: rgba(24, 24, 27, 0.5);
+    --glass-hover: rgba(24, 24, 27, 0.7);
+    --red-accent: rgba(255, 50, 50, 0.8);
+    --red-glow: rgba(255, 50, 50, 0.3);
+    --border-subtle: rgba(63, 63, 70, 0.5);
+  }
+  
+  /* Modal backdrop */
+  .modal-backdrop {
+    background: var(--bg-dark);
+    backdrop-filter: blur(4px);
+  }
+  
+  /* Room card */
+  .room-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .room-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px var(--red-glow);
+  }
+  
+  /* Input and textarea focus effects */
+  input:focus,
+  textarea:focus {
+    box-shadow: 0 0 10px var(--red-glow);
+  }
+  
+  /* Ensure navbar is sticky */
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }

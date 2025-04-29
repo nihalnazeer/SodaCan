@@ -1,0 +1,95 @@
+/* ViewRooms.css - Styles for ViewRooms and GameRoom pages, extending Dashboard.css */
+
+/* Reuse Dashboard.css variables */
+:root {
+    --bg-dark: rgba(9, 9, 11, 0.9);
+    --glass-dark: rgba(24, 24, 27, 0.5);
+    --glass-hover: rgba(24, 24, 27, 0.7);
+    --red-accent: rgba(255, 50, 50, 0.8);
+    --red-glow: rgba(255, 50, 50, 0.3);
+    --border-subtle: rgba(63, 63, 70, 0.5);
+  }
+  
+  /* Ensure room cards have a fixed height */
+  .room-card {
+    min-height: 80px; /* Fixed height for consistency */
+  }
+  
+  /* Game option buttons */
+  .game-option {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .game-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.3), 0 0 10px var(--red-glow);
+  }
+  
+  /* Clock styling */
+  .clock {
+    font-family: monospace;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+  }
+  
+  .clock:hover {
+    background: rgba(24, 24, 27, 0.8);
+  }
+  
+  /* Message styling */
+  .message-own {
+    margin-left: auto;
+    background: var(--red-glow);
+  }
+  
+  /* Member card */
+  .member-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .member-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.3), 0 0 10px var(--red-glow);
+  }
+  
+  /* Input focus effects */
+  input:focus,
+  textarea:focus {
+    box-shadow: 0 0 10px var(--red-glow);
+  }
+  
+  /* Enhanced chat container */
+  .smooth-chat {
+    background: var(--glass-dark);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+  }
+  
+  /* Scrollbar customization for chat and room lists */
+  .smooth-chat::-webkit-scrollbar,
+  .w-80 .room-list::-webkit-scrollbar,
+  .w-96 .room-list::-webkit-scrollbar {
+    width: 5px;
+  }
+  
+  .smooth-chat::-webkit-scrollbar-track,
+  .w-80 .room-list::-webkit-scrollbar-track,
+  .w-96 .room-list::-webkit-scrollbar-track {
+    background: rgba(24, 24, 27, 0.3);
+    border-radius: 10px;
+  }
+  
+  .smooth-chat::-webkit-scrollbar-thumb,
+  .w-80 .room-list::-webkit-scrollbar-thumb,
+  .w-96 .room-list::-webkit-scrollbar-thumb {
+    background: rgba(82, 82, 91, 0.5);
+    border-radius: 10px;
+  }
+  
+  .smooth-chat::-webkit-scrollbar-thumb:hover,
+  .w-80 .room-list::-webkit-scrollbar-thumb:hover,
+  .w-96 .room-list::-webkit-scrollbar-thumb:hover {
+    background: var(--red-glow);
+  }
