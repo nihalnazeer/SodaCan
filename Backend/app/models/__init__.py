@@ -1,13 +1,29 @@
-# Import base first
+# app/models/__init__.py
 from .base import Base
 
-# Import all models
-from .user import User
-from .room import Room
-from .room_member import RoomMember
-from .message import Message
-from .bet import Bet
-from .refresh_token import RefreshToken
+# Lazy loading pattern
+def __getattr__(name):
+    if name == "User":
+        from .user import User
+        return User
+    elif name == "Room":
+        from .room import Room
+        return Room
+    elif name == "RoomMember":
+        from .room_member import RoomMember
+        return RoomMember
+    elif name == "Message":
+        from .message import Message
+        return Message
+    elif name == "Bet":
+        from .bet import Bet
+        return Bet
+    elif name == "RefreshToken":
+        from .refresh_token import RefreshToken
+        return RefreshToken
+    elif name == "Notification":
+        from .notification import Notification
+        return Notification
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
-# Make all models available
-__all__ = ["Base", "User", "Room", "RoomMember", "Message", "Bet", "RefreshToken"]
+__all__ = ["Base", "User", "Room", "RoomMember", "Message", "Bet", "RefreshToken", "Notification"]

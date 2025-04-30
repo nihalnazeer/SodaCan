@@ -11,9 +11,10 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     coins = Column(Integer, nullable=False, default=1000)
     
-    # Use strings only, no imports of other models
+    # Relationships
     rooms = relationship("Room", back_populates="creator", cascade="all, delete-orphan")
     room_memberships = relationship("RoomMember", back_populates="user", cascade="all, delete-orphan")
     messages = relationship("Message", back_populates="user", cascade="all, delete-orphan")
-    bets = relationship("Bet", back_populates="user", cascade="all, delete-orphan")
+    bets = relationship("Bet", foreign_keys="Bet.user_id", back_populates="user", cascade="all, delete-orphan")
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
+    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")  # Added this line

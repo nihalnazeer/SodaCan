@@ -1,241 +1,304 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.models.room import Room
+from app.models.room import Room, RoomStatus
+from app.models.room_member import RoomMember, Role
 from app.models.user import User
-from app.models.room_member import RoomMember
-from app.models.message import Message
 from app.schemas.room import RoomCreate, RoomResponse
-from app.schemas.user import UserResponse
 from app.core.auth import get_current_user
-import uuid
 import logging
+import uuid
+from pydantic import BaseModel, constr
+from sqlalchemy import func
+from typing import Optional, List
 
+router = APIRouter(prefix="/api/rooms", tags=["rooms"])
 logging.basicConfig(filename='log.txt', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-router = APIRouter()
+class RoomCreate(BaseModel):
+    name: constr(min_length=3, strip_whitespace=True)
+    description: Optional[str] = None
 
-@router.get("/", response_model=list[RoomResponse])
-async def get_all_rooms(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """List all rooms (public and private) the user is a member of."""
+class RoomResponse(BaseModel):
+    id: int
+    creator_id: int
+    name: str
+    description: Optional[str]
+    status: RoomStatus
+    is_public: bool
+    token: Optional[str]
+    member_count: int
+
+@router.get("/{room_id}", response_model=RoomResponse)
+async def get_room_details(
+    room_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     try:
-        rooms = (
-            db.query(Room)
-            .join(RoomMember, Room.id == RoomMember.room_id)
-            .filter(RoomMember.user_id == user.id, Room.status == "OPEN")
-            .all()
-        )
-        logging.info(f"User {user.id} fetched {len(rooms)} rooms: {[room.name for room in rooms]}")
-        return rooms
+        room = db.query(Room).filter(Room.id == room_id).first()
+        if not room:
+            logging.error(f"Room {room_id} not found")
+            raise HTTPException(status_code=404, detail="Room not found")
+        if not room.is_public:
+            member = db.query(RoomMember).filter(
+                RoomMember.room_id == room_id,
+                RoomMember.user_id == user.id
+            ).first()
+            if not member:
+                logging.error(f"User {user.id} not authorized for private room {room_id}")
+                raise HTTPException(status_code=403, detail="Not authorized to access this room")
+        member_count = db.query(func.count(RoomMember.id)).filter(RoomMember.room_id == room_id).scalar()
+        logging.info(f"User {user.id} fetched details for room {room_id}")
+        return {**room.__dict__, "member_count": member_count}
+    except HTTPException:
+        raise
     except Exception as e:
-        logging.error(f"Error fetching rooms for user {user.id}: {str(e)}", exc_info=True)
+        logging.error(f"Error fetching room {room_id}: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.post("/public", response_model=RoomResponse)
-async def create_public_room(room: RoomCreate, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Create a public room with a name, visible to all users."""
+async def create_public_room(
+    room_data: RoomCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    request: Request = None
+):
     try:
-        db_room = Room(
+        room = Room(
             creator_id=user.id,
-            name=room.name,
-            status="OPEN",
+            name=room_data.name,
+            status=RoomStatus.OPEN,
             is_public=True,
             token=None
         )
-        db.add(db_room)
+        db.add(room)
         db.commit()
-        db.refresh(db_room)
-
-        room_member = RoomMember(user_id=user.id, room_id=db_room.id)
+        db.refresh(room)
+        
+        room_member = RoomMember(
+            room_id=room.id,
+            user_id=user.id,
+            role=Role.SUPERUSER
+        )
         db.add(room_member)
         db.commit()
-
-        logging.info(f"User {user.id} created public room {db_room.id}: {room.name}, added as member")
-        return db_room
+        
+        logging.info(f"Public room {room.id} created by user {user.id} with SUPERUSER role")
+        return {**room.__dict__, "member_count": 1}
     except Exception as e:
+        logging.error(f"Error creating public room: {str(e)}")
         db.rollback()
-        logging.error(f"Error creating public room: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.post("/private", response_model=RoomResponse)
-async def create_private_room(room: RoomCreate, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Create a private room with a name, generates a unique token (room number)."""
+async def create_private_room(
+    room_data: RoomCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    request: Request = None
+):
     try:
-        token = str(uuid.uuid4())
-        db_room = Room(
+        room = Room(
             creator_id=user.id,
-            name=room.name,
-            status="OPEN",
+            name=room_data.name,
+            status=RoomStatus.OPEN,
             is_public=False,
-            token=token
+            token=str(uuid.uuid4())
         )
-        db.add(db_room)
+        db.add(room)
         db.commit()
-        db.refresh(db_room)
-
-        room_member = RoomMember(user_id=user.id, room_id=db_room.id)
-        db.add(room_member)
-        db.commit()
-
-        logging.info(f"User {user.id} created private room {db_room.id}: {room.name}, token: {token}, added as member")
-        return db_room
-    except Exception as e:
-        db.rollback()
-        logging.error(f"Error creating private room: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-
-@router.get("/public/view", response_model=list[RoomResponse])
-async def get_public_rooms(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """List all public, open rooms."""
-    try:
-        rooms = db.query(Room).filter(Room.is_public == True, Room.status == "OPEN").all()
-        logging.info(f"User {user.id} fetched {len(rooms)} public rooms")
-        return rooms
-    except Exception as e:
-        logging.error(f"Error fetching public rooms: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-
-@router.post("/public/join/{id}", response_model=RoomResponse)
-async def join_public_room(id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Join a public room by ID."""
-    try:
-        room = db.query(Room).filter(Room.id == id, Room.is_public == True, Room.status == "OPEN").first()
-        if not room:
-            logging.error(f"Public room {id} not found or closed")
-            raise HTTPException(status_code=404, detail="Public room not found or closed")
+        db.refresh(room)
         
-        member_count = db.query(RoomMember).filter(RoomMember.room_id == id).count()
-        if member_count >= 100:
-            logging.error(f"Public room {id} is full")
-            raise HTTPException(status_code=400, detail="Room is full")
-        
-        existing_member = db.query(RoomMember).filter(RoomMember.user_id == user.id, RoomMember.room_id == id).first()
-        if existing_member:
-            logging.warning(f"User {user.id} already a member of public room {id}")
-            raise HTTPException(status_code=400, detail="You are already a member of this room")
-        
-        room_member = RoomMember(user_id=user.id, room_id=room.id)
-        db.add(room_member)
-        db.commit()
-        db.refresh(room_member)
-        
-        welcome_message = Message(
+        room_member = RoomMember(
             room_id=room.id,
-            user_id=None,
-            content=f"Welcome to {room.name}! Start chatting in the #chat channel."
+            user_id=user.id,
+            role=Role.SUPERUSER
         )
-        db.add(welcome_message)
+        db.add(room_member)
         db.commit()
-        db.refresh(welcome_message)
-
-        logging.info(f"User {user.id} joined public room {id}, welcome message {welcome_message.id} sent")
-        return room
-    except HTTPException:
-        raise
+        
+        logging.info(f"Private room {room.id} created by user {user.id} with SUPERUSER role")
+        return {**room.__dict__, "member_count": 1}
     except Exception as e:
+        logging.error(f"Error creating private room: {str(e)}")
         db.rollback()
-        logging.error(f"Unexpected error joining public room {id}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-@router.get("/private", response_model=list[RoomResponse])
-async def get_private_rooms(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """List private rooms created by the authenticated user."""
+@router.post("/{room_id}/join", response_model=dict)
+async def join_room(
+    room_id: int,
+    token: str = None,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     try:
-        rooms = db.query(Room).filter(Room.is_public == False, Room.creator_id == user.id).all()
+        room = db.query(Room).filter(Room.id == room_id).first()
+        if not room:
+            logging.error(f"Room {room_id} not found")
+            raise HTTPException(status_code=404, detail="Room not found")
+        if not room.is_public and (not token or room.token != token):
+            logging.error(f"Invalid token for private room {room_id}")
+            raise HTTPException(status_code=403, detail="Invalid token")
+        existing_member = db.query(RoomMember).filter(
+            RoomMember.room_id == room_id,
+            RoomMember.user_id == user.id
+        ).first()
+        if existing_member:
+            logging.error(f"User {user.id} already in room {room_id}")
+            raise HTTPException(status_code=400, detail="User already in room")
+        room_member = RoomMember(
+            room_id=room_id,
+            user_id=user.id,
+            role=Role.MEMBER
+        )
+        db.add(room_member)
+        db.commit()
+        logging.info(f"User {user.id} joined room {room_id} as MEMBER")
+        return {"message": "Successfully joined room"}
+    except Exception as e:
+        logging.error(f"Error joining room {room_id}: {str(e)}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.get("/", response_model=List[RoomResponse])
+async def get_all_rooms(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        rooms = (
+            db.query(Room, func.count(RoomMember.id).label("member_count"))
+            .join(RoomMember, Room.id == RoomMember.room_id)
+            .filter(RoomMember.user_id == user.id)
+            .group_by(Room.id)
+            .all()
+        )
+        logging.info(f"User {user.id} fetched {len(rooms)} rooms")
+        return [{**room.__dict__, "member_count": member_count} for room, member_count in rooms]
+    except Exception as e:
+        logging.error(f"Error fetching rooms for user {user.id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.get("/public/view", response_model=List[RoomResponse])
+async def get_public_rooms(db: Session = Depends(get_db)):
+    try:
+        rooms = (
+            db.query(Room, func.count(RoomMember.id).label("member_count"))
+            .outerjoin(RoomMember, Room.id == RoomMember.room_id)
+            .filter(Room.is_public == True)
+            .group_by(Room.id)
+            .all()
+        )
+        logging.info(f"Fetched {len(rooms)} public rooms")
+        return [{**room.__dict__, "member_count": member_count} for room, member_count in rooms]
+    except Exception as e:
+        logging.error(f"Error fetching public rooms: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.get("/private", response_model=List[RoomResponse])
+async def get_private_rooms(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        rooms = (
+            db.query(Room, func.count(RoomMember.id).label("member_count"))
+            .join(RoomMember, Room.id == RoomMember.room_id)
+            .filter(RoomMember.user_id == user.id, Room.is_public == False)
+            .group_by(Room.id)
+            .all()
+        )
         logging.info(f"User {user.id} fetched {len(rooms)} private rooms")
-        return rooms
+        return [{**room.__dict__, "member_count": member_count} for room, member_count in rooms]
     except Exception as e:
-        logging.error(f"Error fetching private rooms: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-
-@router.post("/private/join", response_model=RoomResponse)
-async def join_private_room(body: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Join a private room by token."""
-    try:
-        token = body.get("token")
-        if not token:
-            logging.error("Token not provided for private room join")
-            raise HTTPException(status_code=400, detail="Token is required")
-        
-        room = db.query(Room).filter(Room.token == token, Room.is_public == False, Room.status == "OPEN").first()
-        if not room:
-            logging.error(f"Private room with token {token} not found or closed")
-            raise HTTPException(status_code=404, detail="Private room not found or closed")
-        
-        member_count = db.query(RoomMember).filter(RoomMember.room_id == room.id).count()
-        if member_count >= 100:
-            logging.error(f"Private room {room.id} is full")
-            raise HTTPException(status_code=400, detail="Room is full")
-        
-        existing_member = db.query(RoomMember).filter(RoomMember.user_id == user.id, RoomMember.room_id == room.id).first()
-        if existing_member:
-            logging.warning(f"User {user.id} already a member of private room {room.id}")
-            raise HTTPException(status_code=400, detail="You are already a member of this room")
-        
-        room_member = RoomMember(user_id=user.id, room_id=room.id)
-        db.add(room_member)
-        db.commit()
-        db.refresh(room_member)
-        
-        welcome_message = Message(
-            room_id=room.id,
-            user_id=None,
-            content=f"Welcome to {room.name}! Start chatting in the #chat channel."
-        )
-        db.add(welcome_message)
-        db.commit()
-        db.refresh(welcome_message)
-
-        logging.info(f"User {user.id} joined private room {room.id} via token {token}, welcome message {welcome_message.id} sent")
-        return room
-    except HTTPException:
-        raise
-    except Exception as e:
-        db.rollback()
-        logging.error(f"Unexpected error joining private room with token {token}: {str(e)}", exc_info=True)
+        logging.error(f"Error fetching private rooms for user {user.id}: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.get("/search/{token}", response_model=RoomResponse)
 async def search_private_room(token: str, db: Session = Depends(get_db)):
-    """Search for a private room by its token (room number)."""
     try:
-        room = db.query(Room).filter(Room.token == token, Room.is_public == False, Room.status == "OPEN").first()
+        room = (
+            db.query(Room, func.count(RoomMember.id).label("member_count"))
+            .outerjoin(RoomMember, Room.id == RoomMember.room_id)
+            .filter(Room.token == token, Room.is_public == False)
+            .group_by(Room.id)
+            .first()
+        )
         if not room:
             logging.error(f"Private room with token {token} not found")
-            raise HTTPException(status_code=404, detail="Private room not found")
-        logging.info(f"Private room {room.id} found for token {token}")
-        return room
+            raise HTTPException(status_code=404, detail="Room not found")
+        room_obj, member_count = room
+        logging.info(f"Found private room with token {token}")
+        return {**room_obj.__dict__, "member_count": member_count}
     except Exception as e:
-        logging.error(f"Error searching private room with token {token}: {str(e)}", exc_info=True)
+        logging.error(f"Error searching for room with token {token}: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-@router.get("/room/{room_id}/members", response_model=list[UserResponse])
-async def get_room_members(room_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """List all members of a room by room ID."""
+@router.get("/room/{room_id}/members")
+async def get_room_members(
+    room_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     try:
-        # Verify the room exists and is open
-        room = db.query(Room).filter(Room.id == room_id, Room.status == "OPEN").first()
-        if not room:
-            logging.error(f"Room {room_id} not found or closed")
-            raise HTTPException(status_code=404, detail="Room not found or closed")
-
-        # Verify the user is a member of the room
-        is_member = db.query(RoomMember).filter(RoomMember.room_id == room_id, RoomMember.user_id == user.id).first()
+        is_member = db.query(RoomMember).filter(
+            RoomMember.room_id == room_id,
+            RoomMember.user_id == user.id
+        ).first()
         if not is_member:
             logging.error(f"User {user.id} is not a member of room {room_id}")
-            raise HTTPException(status_code=403, detail="You are not a member of this room")
-
-        # Fetch members
-        members = (
-            db.query(User)
-            .join(RoomMember, User.id == RoomMember.user_id)
-            .filter(RoomMember.room_id == room_id)
-            .all()
-        )
+            raise HTTPException(status_code=403, detail="User is not a member of this room")
+        members = db.query(RoomMember).filter(RoomMember.room_id == room_id).all()
+        result = [{"id": m.user_id, "username": db.query(User).filter(User.id == m.user_id).first().username} for m in members]
         logging.info(f"User {user.id} fetched {len(members)} members for room {room_id}")
-        return members
-    except HTTPException:
-        raise
+        return result
     except Exception as e:
-        logging.error(f"Error fetching members for room {room_id}: {str(e)}", exc_info=True)
+        logging.error(f"Error fetching members for room {room_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.delete("/public/{room_id}")
+async def delete_public_room(
+    room_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        room = db.query(Room).filter(Room.id == room_id, Room.is_public == True).first()
+        if not room:
+            logging.error(f"Public room {room_id} not found")
+            raise HTTPException(status_code=404, detail="Room not found")
+        if room.creator_id != user.id:
+            logging.error(f"User {user.id} is not the creator of room {room_id}")
+            raise HTTPException(status_code=403, detail="Only the creator can delete the room")
+        db.delete(room)
+        db.commit()
+        logging.info(f"Public room {room_id} deleted by user {user.id}")
+        return {"message": "Room deleted successfully"}
+    except Exception as e:
+        logging.error(f"Error deleting public room {room_id}: {str(e)}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.delete("/private/{token}")
+async def delete_private_room(
+    token: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        room = db.query(Room).filter(Room.token == token, Room.is_public == False).first()
+        if not room:
+            logging.error(f"Private room with token {token} not found")
+            raise HTTPException(status_code=404, detail="Room not found")
+        if room.creator_id != user.id:
+            logging.error(f"User {user.id} is not the creator of room {room.id}")
+            raise HTTPException(status_code=403, detail="Only the creator can delete the room")
+        db.delete(room)
+        db.commit()
+        logging.info(f"Private room {room.id} deleted by user {user.id}")
+        return {"message": "Room deleted successfully"}
+    except Exception as e:
+        logging.error(f"Error deleting private room with token {token}: {str(e)}")
+        db.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")

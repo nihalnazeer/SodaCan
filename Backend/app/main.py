@@ -5,6 +5,7 @@ from app.api.rooms import router as room_router
 from app.api.bets import router as bet_router
 from app.api.messages import router as message_router
 from app.core.auth import router as auth_router
+from app.api.notifications import router as notification_router
 from app.core.database import init_db
 import logging
 
@@ -38,6 +39,7 @@ app.include_router(room_router, prefix="/api/rooms", tags=["Rooms"])
 app.include_router(bet_router, prefix="/api/bets", tags=["Bets"])
 app.include_router(message_router, prefix="/api/messages", tags=["Messages"])
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
+app.include_router(notification_router, prefix="/api/notifications", tags=["Notifications"])
 
 # Event to run during startup
 @app.on_event("startup")

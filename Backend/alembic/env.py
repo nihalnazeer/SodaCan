@@ -8,23 +8,27 @@ from alembic import context
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# This is the Alembic Config object, which provides access to the values within the .ini file in use.
+# This is the Alembic Config object
 config = context.config
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Add your model's MetaData object here for 'autogenerate' support
-from app.models.base import Base
-from app.models.user import User
-from app.models.room import Room
-from app.models.room_member import RoomMember
-from app.models.refresh_token import RefreshToken
-from app.models.bet import Bet
-from app.models.message import Message
+# Solution 1: Safely import Base without triggering circular imports
+try:
+    from app.models.base import Base
+    target_metadata = Base.metadata
+except ImportError as e:
+    print(f"Warning: Couldn't import models - {e}")
+    target_metadata = None
 
-target_metadata = Base.metadata
+# Solution 2: Alternative approach using delayed imports (recommended)
+def include_object(object, name, type_, reflected, compare_to):
+    """Custom function to filter objects during migrations"""
+    if type_ == "table":
+        return True
+    return False
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode."""
@@ -34,6 +38,9 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=include_object,
+        compare_type=True,
+        compare_server_default=True
     )
 
     with context.begin_transaction():
@@ -50,7 +57,10 @@ def run_migrations_online() -> None:
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
-            target_metadata=target_metadata
+            target_metadata=target_metadata,
+            include_object=include_object,
+            compare_type=True,
+            compare_server_default=True
         )
 
         with context.begin_transaction():
