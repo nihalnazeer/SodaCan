@@ -1,33 +1,41 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, StringConstraints
+from typing import Annotated, Optional
 from datetime import datetime
-from typing import Optional
-from app.models.bet import BetStatus, BetResult
+from enum import Enum
+
+class BetStatus(str, Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+
+class BetResult(str, Enum):
+    UNKNOWN = "UNKNOWN"
+    WON = "WON"
+    LOST = "LOST"
+    DRAW = "DRAW"
 
 class BetCreate(BaseModel):
-    room_id: int
-    description: str  # Matches Bet model's 'description'; replace with 'option' if that's the intended field
+    description: Annotated[str, StringConstraints(min_length=3, strip_whitespace=True)]
     amount: int
+    room_id: int
+    mediator_id: int
     end_time: datetime
-
-class BetUpdate(BaseModel):
-    status: BetStatus
 
 class BetResponse(BaseModel):
     id: int
     room_id: int
     user_id: int
-    description: str  # Matches Bet model's 'description'; replace with 'option' if needed
+    user_username: str
+    description: str
     amount: int
     status: BetStatus
     result: BetResult
-    approved_by: Optional[int]
-    created_at: datetime
+    approved_by: Optional[int] = None
+    approved_by_username: Optional[str] = None
     mediator_id: int
+    mediator_username: str
+    created_at: datetime
     start_time: datetime
     end_time: datetime
-    username: Optional[str]
-    mediator_username: Optional[str]
-    approver_username: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}

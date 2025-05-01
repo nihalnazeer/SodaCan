@@ -1,288 +1,233 @@
-/* Login.css - Styles for the Login page with gaming aesthetic */
-@keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+/* Login.css - Ultra transparent soda-themed aesthetics */
+
+/* Root colors with a fun, soda-themed transparent palette */
+:root {
+    --color-fizz-blue: rgba(56, 189, 248, 0.7);
+    --color-fizz-purple: rgba(165, 180, 252, 0.7);
+    --color-fizz-pink: rgba(244, 114, 182, 0.7);
+    --color-fizz-orange: rgba(251, 146, 60, 0.7);
+    --color-fizz-yellow: rgba(250, 204, 21, 0.7);
+    --color-heading: rgba(255, 255, 255, 0.95);
+    --color-body: rgba(255, 255, 255, 0.7);
+    --color-label: rgba(255, 255, 255, 0.85);
+    --color-input-text: rgba(255, 255, 255, 0.95);
+    --color-input-border: rgba(255, 255, 255, 0.15);
+    --color-primary: rgba(56, 189, 248, 0.9);
+    --color-primary-hover: rgba(125, 211, 252, 0.9);
+    --color-button-text: rgba(255, 255, 255, 0.95);
+    --color-error: rgba(251, 113, 133, 0.9);
+    --color-error-bg: rgba(251, 113, 133, 0.12);
   }
   
-  .animated-logo {
-    background: linear-gradient(-45deg, #313134, #414144, #222224, #5a5a5e);
-    background-size: 400% 400%;
-    animation: gradientShift 6s ease infinite;
-    transition: all 0.3s ease;
-  }
-  
-  .animated-logo:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px -5px rgba(201, 38, 38, 0.3);
-  }
-  
-  .logo-pulse {
-    animation: logoPulse 3s ease-in-out infinite;
-  }
-  
-  @keyframes logoPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-  }
-/* Enhanced background with multiple gradient effects and gaming vibe */
-.bg-gradient-to-b {
-    background:
-      /* Radial gradient for spotlight effect */
-      radial-gradient(circle at 15% 15%, rgba(255, 50, 50, 0.08), transparent 35%),
-      /* Subtle red-tinted diagonal accent */
-      linear-gradient(135deg, rgba(255, 30, 30, 0.05) 0%, transparent 50%),
-      /* Main gradient with subtle red tint at bottom */
-      linear-gradient(to bottom, #09090b, #18181b 80%, rgba(39, 29, 29, 1));
+  /* More transparent background with subtle noise */
+  .bg-gradient {
+    background: transparent;
     position: relative;
   }
   
-  .bg-gradient-to-b::before {
+  /* Super subtle texture overlay for added depth */
+  .bg-gradient::before {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    opacity: 0.3;
+    opacity: 0.03;
     pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
     background-repeat: repeat;
     background-size: 200px 200px;
   }
   
-  /* Enhanced gaming-inspired bubble animations with red accents */
-  @keyframes float {
-    0% {
-      transform: translateY(0px) rotate(0deg) scale(1);
-      opacity: 0.3;
-      filter: blur(8px);
-    }
-    50% {
-      transform: translateY(-15px) rotate(3deg) scale(1.1);
-      opacity: 0.6;
-      filter: blur(10px);
-    }
-    100% {
-      transform: translateY(0px) rotate(0deg) scale(1);
-      opacity: 0.3;
-      filter: blur(8px);
-    }
+  /* Fun, soda-themed bubbles */
+  .bg-bubble-1 {
+    background: radial-gradient(circle at 30% 30%, var(--color-fizz-blue), rgba(63, 63, 70, 0.03));
+    filter: blur(10px);
+    opacity: 0.4;
+    transition: all 0.8s ease;
+    animation: float 8s ease-in-out infinite;
   }
   
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-      opacity: 0.5;
-      box-shadow: 0 0 10px rgba(255, 50, 50, 0.1);
-    }
-    50% {
-      transform: scale(1.05);
-      opacity: 0.7;
-      box-shadow: 0 0 20px rgba(255, 50, 50, 0.2);
-    }
-    100% {
-      transform: scale(1);
-      opacity: 0.5;
-      box-shadow: 0 0 10px rgba(255, 50, 50, 0.1);
-    }
+  .bg-bubble-2 {
+    background: radial-gradient(circle at 30% 30%, var(--color-fizz-pink), rgba(63, 63, 70, 0.03));
+    filter: blur(12px);
+    opacity: 0.4;
+    transition: all 0.8s ease;
+    animation: float 12s ease-in-out infinite reverse;
   }
   
-  .bubble {
-    animation: float 6s ease-in-out infinite;
-    background: radial-gradient(circle at 30% 30%, rgba(255, 50, 50, 0.15), rgba(63, 63, 70, 0.1));
+  .bg-bubble-3 {
+    background: radial-gradient(circle at 30% 30%, var(--color-fizz-yellow), rgba(63, 63, 70, 0.03));
+    filter: blur(10px);
+    opacity: 0.4;
+    transition: all 0.8s ease;
+    animation: float 10s ease-in-out infinite 2s;
   }
   
-  .bubble:nth-child(1) {
-    animation-delay: 0s;
-    animation-duration: 8s;
+  /* Add more bubbles for a fizzy effect */
+  .micro-bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    filter: blur(1px);
+    animation: rise 10s ease-in infinite;
+    opacity: 0;
   }
   
-  .bubble:nth-child(2) {
-    animation-delay: 2s;
-    animation-duration: 10s;
-    background: radial-gradient(circle at 30% 30%, rgba(161, 161, 170, 0.4), rgba(63, 63, 70, 0.1));
+  /* Soda glass container - decorative element */
+  .soda-glass {
+    position: absolute;
+    bottom: 5%;
+    right: 10%;
+    width: 100px;
+    height: 180px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px 10px 20px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4px);
   }
   
-  .bubble:nth-child(3) {
-    animation-delay: 4s;
-    animation-duration: 7s;
-    background: radial-gradient(circle at 30% 30%, rgba(255, 70, 70, 0.2), rgba(63, 63, 70, 0.1));
+  .soda-liquid {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 75%;
+    background: linear-gradient(to bottom, 
+      rgba(244, 114, 182, 0.3),
+      rgba(165, 180, 252, 0.3));
+    border-radius: 0 0 20px 20px;
+    overflow: hidden;
   }
   
-  /* Sports and game icons animation */
-  @keyframes pulse-rotate {
-    0% {
-      transform: scale(1) rotate(0deg);
-      box-shadow: 0 0 0 rgba(255, 80, 80, 0);
-    }
-    50% {
-      transform: scale(1.05) rotate(5deg);
-      box-shadow: 0 0 15px rgba(255, 80, 80, 0.3);
-    }
-    100% {
-      transform: scale(1) rotate(0deg);
-      box-shadow: 0 0 0 rgba(255, 80, 80, 0);
-    }
+  .soda-fizz {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 0 0 20px 20px;
   }
   
-  .icon-pulse {
-    animation: pulse-rotate 5s ease-in-out infinite;
+  /* Ice cubes */
+  .ice-cube {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+    transform: rotate(15deg);
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.5);
+    animation: bob 6s ease-in-out infinite;
   }
   
-  .icon-pulse:nth-child(1) { animation-delay: 0s; }
-  .icon-pulse:nth-child(2) { animation-delay: 1s; }
-  .icon-pulse:nth-child(3) { animation-delay: 2s; }
-  .icon-pulse:nth-child(4) { animation-delay: 3s; }
-  
-  /* Feature highlight animation */
-  @keyframes feature-glow {
-    0% {
-      box-shadow: 0 0 0 rgba(255, 50, 50, 0);
-    }
-    50% {
-      box-shadow: 0 0 10px rgba(255, 50, 50, 0.2);
-    }
-    100% {
-      box-shadow: 0 0 0 rgba(255, 50, 50, 0);
-    }
+  .ice-cube:nth-child(1) {
+    width: 25px;
+    height: 25px;
+    left: 20px;
+    top: 60px;
+    animation-delay: 0.5s;
   }
   
-  .feature-card {
+  .ice-cube:nth-child(2) {
+    width: 20px;
+    height: 20px;
+    right: 20px;
+    top: 90px;
+    transform: rotate(-10deg);
+    animation-delay: 1.5s;
+  }
+  
+  .ice-cube:nth-child(3) {
+    width: 28px;
+    height: 28px;
+    left: 35px;
+    top: 110px;
+    transform: rotate(30deg);
+    animation-delay: 1s;
+  }
+  
+  /* Rising bubbles in the soda */
+  .fizz-bubble {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: rise var(--rise-time, 4s) ease-in infinite var(--rise-delay, 0s);
+  }
+  
+  /* Ultra transparent glass effect with increased blur */
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Smoother logo styling with subtle glow */
+  .smooth-logo {
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.15);
+    border-color: rgba(255, 255, 255, 0.15);
     transition: all 0.3s ease;
   }
   
-  .feature-card:hover {
-    transform: translateY(-5px);
-    background: linear-gradient(145deg, rgba(24, 24, 27, 0.9), rgba(39, 39, 41, 0.9));
+  .smooth-logo:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 10px 25px rgba(56, 189, 248, 0.25), 0 0 15px rgba(56, 189, 248, 0.15);
+    border-color: rgba(255, 255, 255, 0.25);
   }
   
-  .feature-icon {
-    transition: all 0.3s ease;
-    animation: feature-glow 3s infinite ease-in-out;
+  /* Fun spinning animation for logo */
+  .smooth-logo svg {
+    transition: all 0.5s ease;
   }
   
-  /* Icon animations */
-  @keyframes iconFloat {
-    0% {
-      transform: translateY(0) rotate(0deg);
-      opacity: 0.8;
-    }
-    50% {
-      transform: translateY(-10px) rotate(5deg);
-      opacity: 1;
-    }
-    100% {
-      transform: translateY(0) rotate(0deg);
-      opacity: 0.8;
-    }
+  .smooth-logo:hover svg {
+    transform: rotate(10deg);
   }
   
+  .smooth-logo svg path {
+    stroke: rgba(255, 255, 255, 0.8);
+    transition: stroke 0.3s ease;
+  }
+  
+  .smooth-logo:hover svg path {
+    stroke: var(--color-fizz-blue);
+  }
+  
+  /* Simplified icon container with bounce effect */
   .icon-container {
     position: relative;
     transition: all 0.4s ease;
+    z-index: 1;
   }
   
   .icon-container:hover {
-    transform: scale(1.05);
+    transform: translateY(-8px);
   }
   
-  .icon-container:hover .icon-glow {
-    opacity: 0.8;
-  }
-  
-  .icon-float {
-    animation: iconFloat 6s ease-in-out infinite;
-  }
-  
-  .icon-float:nth-child(1) {
-    animation-delay: 0s;
-    animation-duration: 6s;
-  }
-  
-  .icon-float:nth-child(2) {
-    animation-delay: 1s;
-    animation-duration: 7s;
-  }
-  
-  .icon-float:nth-child(3) {
-    animation-delay: 2s;
-    animation-duration: 8s;
-  }
-  
-  .icon-float:nth-child(4) {
-    animation-delay: 3s;
-    animation-duration: 9s;
-  }
-  
-  .icon-glow {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: inherit;
-    box-shadow: 0 0 20px 5px rgba(255, 50, 50, 0.3);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: -1;
-  }
-  
-  /* Enhanced form with gaming-styled inner glow and gradient */
-  .bg-zinc-900 {
-    background: linear-gradient(145deg, #18181b, #272729);
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 10px 20px rgba(0, 0, 0, 0.2);
-    position: relative;
-    z-index: 10;
-    border: 1px solid rgba(63, 63, 70, 0.8);
+  /* Background card styling with increased transparency */
+  .bg-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
-  }
-  
-  /* Add subtle red glow to form on hover */
-  .bg-zinc-900:hover {
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.07),
-                0 10px 25px -5px rgba(0, 0, 0, 0.3),
-                0 10px 10px -5px rgba(0, 0, 0, 0.2),
-                0 0 15px rgba(255, 50, 50, 0.1);
-    border: 1px solid rgba(255, 50, 50, 0.3);
-    transition: all 0.3s ease;
-  }
-  
-  /* Gaming-styled input fields with subtle red accents */
-  input[type="email"],
-  input[type="password"] {
-    transition: all 0.3s ease;
-    background: linear-gradient(to bottom, rgba(24, 24, 27, 0.9), rgba(9, 9, 11, 0.8));
-    border: 1px solid rgba(63, 63, 70, 0.8);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.3);
-  }
-  
-  input[type="email"]:focus,
-  input[type="password"]:focus {
-    background: linear-gradient(to bottom, rgba(24, 24, 27, 1), rgba(9, 9, 11, 0.9));
-    border-color: rgba(255, 70, 70, 0.5);
-    box-shadow: 0 0 0 2px rgba(255, 50, 50, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.3);
-  }
-  
-  /* Enhanced button effects */
-  .button-glow {
-    position: relative;
     overflow: hidden;
-    transition: all 0.3s ease;
+    position: relative;
   }
   
-  .button-glow:hover {
-    box-shadow: 0 0 20px rgba(255, 50, 50, 0.4);
-    transform: translateY(-2px);
+  .bg-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
   }
   
-  .button-glow:active {
-    transform: translateY(1px);
-    box-shadow: 0 0 10px rgba(255, 50, 50, 0.3);
-  }
-  
-  .button-glow:before {
+  /* Add a fun shimmer effect to cards */
+  .bg-card::after {
     content: '';
     position: absolute;
     top: -50%;
@@ -292,77 +237,208 @@
     background: linear-gradient(
       to bottom right,
       rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0) 40%,
-      rgba(255, 255, 255, 0.4) 50%,
-      rgba(255, 255, 255, 0) 60%,
+      rgba(255, 255, 255, 0.1) 50%,
       rgba(255, 255, 255, 0) 100%
     );
-    transform: rotate(45deg);
-    transition: all 0.3s ease;
+    transform: rotate(30deg);
     opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
   }
   
-  .button-glow:hover:before {
-    animation: shine 1.5s ease-in-out;
+  .bg-card:hover::after {
+    opacity: 1;
+    animation: shimmer 1.5s ease-in-out;
   }
   
-  @keyframes shine {
-    0% {
-      left: -50%;
-      opacity: 0;
-    }
-    50% {
-      opacity: 1;
-    }
-    100% {
-      left: 150%;
-      opacity: 0;
-    }
-  }
-  
-  /* Logo animation */
-  .logo-container {
+  /* Feature card styling with more fun hover effects */
+  .feature-card {
+    border-radius: 16px;
     transition: all 0.3s ease;
-  }
-  
-  .logo-container:hover svg path {
-    stroke: rgba(255, 70, 70, 0.8);
-    transition: all 0.3s ease;
-  }
-  
-  /* Animated gradient button with enhanced effects */
-  .animated-gradient-button {
-    background-size: 200% 200%;
-    background-image: linear-gradient(45deg, 
-      #333 0%, 
-      #444 25%, 
-      rgba(255, 50, 50, 0.5) 50%, 
-      #444 75%, 
-      #333 100%);
-    animation: gradient-shift 5s ease infinite;
     position: relative;
     z-index: 1;
+    overflow: hidden;
   }
   
-  .animated-gradient-button::after {
+  .feature-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  
+  .feature-card::after {
     content: '';
     position: absolute;
-    inset: 0;
-    z-index: -1;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0) 70%
+    );
     opacity: 0;
-    background: linear-gradient(45deg, 
-      rgba(255, 50, 50, 0.4), 
-      rgba(255, 120, 50, 0.4),
-      rgba(255, 50, 50, 0.4));
-    filter: blur(15px);
-    transition: opacity 0.3s ease;
+    transition: opacity 0.5s;
+    pointer-events: none;
+    z-index: -1;
   }
   
-  .animated-gradient-button:hover::after {
+  .feature-card:hover::after {
     opacity: 1;
   }
   
-  @keyframes gradient-shift {
+  .feature-icon {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+    transition: all 0.3s ease;
+  }
+  
+  .feature-card:hover .feature-icon {
+    border-color: var(--color-fizz-blue);
+    box-shadow: 0 8px 16px rgba(56, 189, 248, 0.15);
+    transform: scale(1.05);
+  }
+  
+  /* Form styling with more transparent elements */
+  input[type="email"],
+  input[type="password"] {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.9);
+    transition: all 0.3s ease;
+  }
+  
+  input[type="email"]:focus,
+  input[type="password"]:focus {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--color-fizz-blue);
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.12);
+  }
+  
+  /* Fun gradient button styling */
+  .smooth-button {
+    background: linear-gradient(45deg, 
+      var(--color-fizz-blue), 
+      var(--color-fizz-purple), 
+      var(--color-fizz-pink));
+    background-size: 200% 200%;
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
+    transition: all 0.3s ease;
+    animation: gradientShift 4s ease infinite;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .smooth-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(56, 189, 248, 0.35);
+  }
+  
+  .smooth-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(56, 189, 248, 0.2);
+  }
+  
+  /* Button shimmer effect */
+  .smooth-button::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(30deg);
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+  }
+  
+  .smooth-button:hover::after {
+    opacity: 1;
+    animation: shimmer 1.5s ease-in-out;
+  }
+  
+  /* Fun text gradient with more vibrant colors */
+  .bg-text-gradient {
+    background: linear-gradient(to right, 
+      var(--color-fizz-blue), 
+      var(--color-fizz-purple),
+      var(--color-fizz-pink));
+    background-clip: text;
+    -webkit-background-clip: text;
+  }
+  
+  /* Helper text styling */
+  .helper-text {
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+  }
+  
+  /* Apply color variables */
+  .text-heading { color: var(--color-heading); }
+  .text-body { color: var(--color-body); }
+  .text-label { color: var(--color-label); }
+  .text-input-text { color: var(--color-input-text); }
+  .border-input-border { border-color: var(--color-input-border); }
+  .text-primary { color: var(--color-primary); }
+  .text-primary-hover { color: var(--color-primary-hover); }
+  .text-button-text { color: var(--color-button-text); }
+  .text-error { color: var(--color-error); }
+  .bg-error-bg { background-color: var(--color-error-bg); }
+  .border-error { border-color: var(--color-error); }
+  .bg-input { background: rgba(255, 255, 255, 0.03); }
+  
+  /* Input placeholder styling */
+  ::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+    opacity: 0.7;
+  }
+  
+  /* Animations */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+  
+  @keyframes rise {
+    0% {
+      transform: translateY(100px);
+      opacity: 0;
+    }
+    20% {
+      opacity: 0.8;
+    }
+    80% {
+      opacity: 0.8;
+    }
+    100% {
+      transform: translateY(-100px);
+      opacity: 0;
+    }
+  }
+  
+  @keyframes shimmer {
+    0% {
+      transform: rotate(30deg) translateX(-100%);
+    }
+    100% {
+      transform: rotate(30deg) translateX(100%);
+    }
+  }
+  
+  @keyframes gradientShift {
     0% {
       background-position: 0% 50%;
     }
@@ -374,19 +450,54 @@
     }
   }
   
-  /* Pulsing helper text */
-  @keyframes subtle-pulse {
-    0% {
-      opacity: 0.7;
+  @keyframes bob {
+    0%, 100% {
+      transform: rotate(15deg) translateY(0);
     }
     50% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 0.7;
+      transform: rotate(15deg) translateY(-10px);
     }
   }
   
-  .helper-text {
-    animation: subtle-pulse 3s infinite ease-in-out;
+  /* Create fizzy bubble animation */
+  @keyframes fizz {
+    0% {
+      transform: scale(0.3);
+      opacity: 0.7;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0;
+    }
+  }
+  
+  /* Media queries for responsive design */
+  @media (max-width: 768px) {
+    .soda-glass {
+      width: 60px;
+      height: 120px;
+      bottom: 10%;
+      right: 5%;
+    }
+    
+    .ice-cube:nth-child(1) {
+      width: 15px;
+      height: 15px;
+      left: 10px;
+      top: 40px;
+    }
+    
+    .ice-cube:nth-child(2) {
+      width: 12px;
+      height: 12px;
+      right: 10px;
+      top: 55px;
+    }
+    
+    .ice-cube:nth-child(3) {
+      width: 18px;
+      height: 18px;
+      left: 20px;
+      top: 70px;
+    }
   }

@@ -1,23 +1,20 @@
 from pydantic_settings import BaseSettings
-from typing import List
+from pydantic import Field
+from typing import List, Optional
 
 class Settings(BaseSettings):
-    database_url: str
-    jwt_secret_key: str
-    jwt_algorithm: str
-    access_token_expire_minutes: int
-    refresh_token_expire_days: int
+    database_url: str = Field(default="postgresql://postgres:password@localhost/sodacan")
+    jwt_secret_key: str = Field(default="your-secret-key")
+    jwt_algorithm: str = Field(default="HS256")
+    access_token_expire_minutes: int = Field(default=90)
+    refresh_token_expire_days: int = Field(default=3)
+    pusher_app_id: Optional[str] = None
+    pusher_key: Optional[str] = None
+    pusher_secret: Optional[str] = None
+    pusher_cluster: Optional[str] = None
+    debug: bool = Field(default=True)
+    cors_origins: str = Field(default="http://localhost:3000")
 
-    # Pusher configuration
-    pusher_app_id: str
-    pusher_key: str
-    pusher_secret: str
-    pusher_cluster: str
-
-    debug: bool = True
-    cors_origins: str = "http://localhost:3000"  # Add this line to declare the field
-
-    # Then add the property to parse it
     @property
     def parsed_cors_origins(self) -> List[str]:
         if isinstance(self.cors_origins, str):

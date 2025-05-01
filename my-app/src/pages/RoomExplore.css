@@ -2,34 +2,47 @@
 
 /* Reuse Dashboard.css variables */
 :root {
-    --bg-dark: rgba(9, 9, 11, 0.9);
-    --glass-dark: rgba(24, 24, 27, 0.5);
-    --glass-hover: rgba(24, 24, 27, 0.7);
-    --red-accent: rgba(255, 50, 50, 0.8);
-    --red-glow: rgba(255, 50, 50, 0.3);
-    --border-subtle: rgba(63, 63, 70, 0.5);
+    --color-heading: rgba(255, 255, 255, 0.9);
+    --color-body: rgba(255, 255, 255, 0.6);
+    --color-label: rgba(255, 255, 255, 0.8);
+    --color-input-text: rgba(255, 255, 255, 0.9);
+    --color-input-border: rgba(255, 255, 255, 0.1);
+    --color-primary: rgba(56, 189, 248, 0.9);
+    --color-primary-hover: rgba(125, 211, 252, 0.9);
+    --color-button-text: rgba(255, 255, 255, 0.95);
+    --color-error: rgba(251, 113, 133, 0.9);
+    --color-error-bg: rgba(251, 113, 133, 0.08);
+    --color-background: #09090b;
+    --color-card: rgba(24, 24, 27, 0.6);
+    --color-border: rgba(63, 63, 70, 0.5);
+    --color-amber-400: #fbbf24;
+    --color-amber-500: #f59e0b;
   }
   
   /* Modal backdrop */
   .modal-backdrop {
-    background: var(--bg-dark);
+    background: var(--color-background);
     backdrop-filter: blur(4px);
   }
   
   /* Room card */
   .room-card {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .room-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px var(--red-glow);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(56, 189, 248, 0.2);
+    border-color: var(--color-primary);
   }
   
   /* Input and textarea focus effects */
   input:focus,
   textarea:focus {
-    box-shadow: 0 0 10px var(--red-glow);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    border-color: var(--color-primary);
   }
   
   /* Ensure navbar is sticky */
@@ -37,4 +50,24 @@
     position: sticky;
     top: 0;
     z-index: 20;
+    background: var(--color-card);
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  /* Additional styles to match the new theme */
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  }
+  
+  .hover-panel {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .hover-panel:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(56, 189, 248, 0.2);
   }

@@ -1,17 +1,14 @@
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
 from app.config import settings
+import logging
 
-Base = declarative_base()
+logger = logging.getLogger(__name__)
 
-DATABASE_URL = "postgresql://postgres.jadorvadbofilfgtxgxj:nihalnazeer@aws-0-ap-south-1.pooler.supabase.com:6543/postgres"
-engine = create_engine(DATABASE_URL, echo=settings.debug)
+engine = create_engine(settings.database_url, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def init_db():
-    print("Table creation attempted.")
-    Base.metadata.create_all(bind=engine)
+Base = declarative_base()
 
 def get_db():
     db = SessionLocal()
@@ -19,3 +16,12 @@ def get_db():
         yield db
     finally:
         db.close()
+
+def init_db():
+    try:
+        logger.debug("Initializing database")
+        Base.metadata.create_all(bind=engine)
+        logger.debug("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Error initializing database: {str(e)}", exc_info=True)
+        raise

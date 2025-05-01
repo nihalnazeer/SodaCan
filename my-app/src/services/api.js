@@ -9,7 +9,7 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    console.log('Request URL:', config.url); // Added for debugging
+    console.log('Request URL:', config.url);
     const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -31,7 +31,7 @@ apiClient.interceptors.response.use(
       error.config._retry = true;
       try {
         console.log('401 detected, attempting token refresh');
-        const refreshResponse = await apiClient.post('/refresh', {
+        const refreshResponse = await apiClient.post('/auth/refresh', {
           refresh_token: localStorage.getItem('refresh_token'),
         });
         localStorage.setItem('access_token', refreshResponse.data.access_token);
@@ -62,7 +62,7 @@ const api = {
   joinRoom: (roomId, token) => apiClient.post(`/rooms/${roomId}/join`, { token }).then((res) => res.data),
   getPublicRooms: () => apiClient.get('/rooms/public/view').then((res) => res.data),
   getPrivateRooms: () => apiClient.get('/rooms/private').then((res) => res.data),
-  getAllRooms: () => apiClient.get('/rooms').then((res) => res.data),
+  getAllRooms: () => apiClient.get('/rooms/me').then((res) => res.data),
   getRoomDetails: (roomId) => apiClient.get(`/rooms/${roomId}`).then((res) => res.data),
   sendMessage: (data) => apiClient.post('/messages', data).then((res) => res.data),
   getRoomMessages: (roomId) => apiClient.get(`/messages/room/${roomId}`).then((res) => res.data),
@@ -71,7 +71,7 @@ const api = {
   searchPrivateRoom: (token) => apiClient.get(`/rooms/search/${token}`).then((res) => res.data),
   getRoomMembers: (roomId) => apiClient.get(`/rooms/room/${roomId}/members`).then((res) => res.data),
   createBet: (data) => apiClient.post('/bets', data).then((res) => res.data),
-  getRoomBets: (roomId) => apiClient.get(`/bets/rooms/${roomId}`).then((res) => res.data),
+  getRoomBets: (roomId) => apiClient.get(`/bets/?room_id=${roomId}`).then((res) => res.data),
   joinBet: (betId) => apiClient.post(`/bets/${betId}/join`).then((res) => res.data),
   updateBetResult: (betId, result) => apiClient.patch(`/bets/${betId}/result`, { result }).then((res) => res.data),
   getNotifications: () => apiClient.get('/notifications').then((res) => res.data),

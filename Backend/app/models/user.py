@@ -16,5 +16,7 @@ class User(Base):
     room_memberships = relationship("RoomMember", back_populates="user", cascade="all, delete-orphan")
     messages = relationship("Message", back_populates="user", cascade="all, delete-orphan")
     bets = relationship("Bet", foreign_keys="Bet.user_id", back_populates="user", cascade="all, delete-orphan")
+    approved_bets = relationship("Bet", foreign_keys="Bet.approved_by", back_populates="approver", cascade="all, delete-orphan")
+    mediated_bets = relationship("Bet", foreign_keys="Bet.mediator_id", back_populates="mediator", cascade="all, delete-orphan")
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
-    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")  # Added this line
+    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")

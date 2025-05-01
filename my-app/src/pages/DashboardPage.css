@@ -1,22 +1,155 @@
-/* Dashboard.css - Transparent dark theme for the Dashboard */
+/* DashboardPage.css - Matching login page aesthetic */
 
 /* Base styling */
 :root {
-    --bg-dark: rgba(9, 9, 11, 0.9);
-    --glass-dark: rgba(24, 24, 27, 0.5);
-    --glass-hover: rgba(24, 24, 27, 0.7);
-    --red-accent: rgba(255, 50, 50, 0.8);
-    --red-glow: rgba(255, 50, 50, 0.3);
-    --border-subtle: rgba(63, 63, 70, 0.5);
+    --color-heading: rgba(255, 255, 255, 0.9);
+    --color-body: rgba(255, 255, 255, 0.6);
+    --color-label: rgba(255, 255, 255, 0.8);
+    --color-input-text: rgba(255, 255, 255, 0.9);
+    --color-input-border: rgba(255, 255, 255, 0.1);
+    --color-primary: rgba(56, 189, 248, 0.9);
+    --color-primary-hover: rgba(125, 211, 252, 0.9);
+    --color-button-text: rgba(255, 255, 255, 0.95);
+    --color-error: rgba(251, 113, 133, 0.9);
+    --color-error-bg: rgba(251, 113, 133, 0.08);
+    --color-background: #09090b;
+    --color-card: rgba(24, 24, 27, 0.6);
+    --color-border: rgba(63, 63, 70, 0.5);
+    --color-amber-400: #fbbf24;
+    --color-amber-500: #f59e0b;
   }
   
-  body {
-    background-color: var(--bg-dark);
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    color: #f4f4f5;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  /* Background and base styles */
+  .bg-background {
+    background-color: var(--color-background);
+  }
+  
+  .text-heading {
+    color: var(--color-heading);
+  }
+  
+  .text-body {
+    color: var(--color-body);
+  }
+  
+  .text-primary {
+    color: var(--color-primary);
+  }
+  
+  .text-error {
+    color: var(--color-error);
+  }
+  
+  .bg-error-bg {
+    background-color: var(--color-error-bg);
+  }
+  
+  .border-input-border {
+    border-color: var(--color-input-border);
+  }
+  
+  .bg-card {
+    background: var(--color-card);
+  }
+  
+  /* Glass effect */
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Smooth logo styling */
+  .smooth-logo {
+    background: rgba(255, 255, 255, 0.07);
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .smooth-logo:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(56, 189, 248, 0.15);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  .smooth-logo svg path {
+    stroke: rgba(255, 255, 255, 0.7);
+    transition: stroke 0.3s ease;
+  }
+  
+  .smooth-logo:hover svg path {
+    stroke: rgba(125, 211, 252, 0.9);
+  }
+  
+  /* Icon container */
+  .icon-container {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.4s ease;
+  }
+  
+  .icon-container:hover {
+    transform: translateY(-8px);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  /* Feature card styling */
+  .feature-card {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+  }
+  
+  .feature-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+    transform: translateY(-5px);
+  }
+  
+  /* Button styling */
+  .smooth-button {
+    background: linear-gradient(to right, rgba(56, 189, 248, 0.9), rgba(129, 140, 248, 0.9));
+    color: var(--color-button-text);
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
+    transition: all 0.3s ease;
+  }
+  
+  .smooth-button:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(to right, rgba(56, 189, 248, 1), rgba(129, 140, 248, 1));
+    box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);
+  }
+  
+  .smooth-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(56, 189, 248, 0.15);
+  }
+  
+  /* Hover panel effect */
+  .hover-panel {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .hover-panel:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(56, 189, 248, 0.2);
+  }
+  
+  /* Coin animation */
+  @keyframes coinPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+  
+  .coin-icon {
+    animation: coinPulse 2s ease-in-out infinite;
   }
   
   /* Scrollbar customization */
@@ -35,141 +168,5 @@
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--red-glow);
-  }
-  
-  /* Transparent dark background */
-  .bg-dark-transparent {
-    background: var(--bg-dark);
-    backdrop-filter: blur(8px);
-  }
-  
-  /* Glassmorphism panels */
-  .bg-glass-dark {
-    background: var(--glass-dark);
-    backdrop-filter: blur(8px);
-    border: 1px solid var(--border-subtle);
-    border-radius: 0.5rem;
-    transition: all 0.3s ease;
-  }
-  
-  .bg-glass-hover {
-    background: var(--glass-hover);
-    border-color: var(--red-glow);
-    box-shadow: 0 0 20px rgba(255, 50, 50, 0.1);
-  }
-  
-  /* Animated gradient button */
-  .animated-gradient-button {
-    background-size: 200% 200%;
-    background-image: linear-gradient(
-      45deg,
-      #333 0%,
-      #444 25%,
-      var(--red-accent) 50%,
-      #444 75%,
-      #333 100%
-    );
-    animation: gradient-shift 5s ease infinite;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-  
-  @keyframes gradient-shift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  
-  .animated-gradient-button::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    opacity: 0;
-    background: radial-gradient(circle, var(--red-glow) 0%, transparent 70%);
-    filter: blur(12px);
-    transition: opacity 0.3s ease;
-  }
-  
-  .animated-gradient-button:hover::after {
-    opacity: 1;
-  }
-  
-  .animated-gradient-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px var(--red-glow);
-  }
-  
-  .animated-gradient-button:active {
-    transform: translateY(1px);
-  }
-  
-  /* Button glow effects */
-  .button-glow {
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .button-glow:hover {
-    box-shadow: 0 0 15px var(--red-glow);
-  }
-  
-  .button-glow:before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-      to bottom right,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0) 40%,
-      rgba(255, 255, 255, 0.3) 50%,
-      rgba(255, 255, 255, 0) 60%,
-      rgba(255, 255, 255, 0) 100%
-    );
-    transform: rotate(45deg);
-    opacity: 0;
-  }
-  
-  .button-glow:hover:before {
-    animation: shine 1.5s ease-in-out;
-  }
-  
-  @keyframes shine {
-    0% {
-      left: -50%;
-      opacity: 0;
-    }
-    50% {
-      opacity: 1;
-    }
-    100% {
-      left: 150%;
-      opacity: 0;
-    }
-  }
-  
-  /* Hover panel transitions */
-  .hover-panel {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .hover-panel:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px var(--red-glow);
-  }
-  
-  /* Coin animation */
-  @keyframes coinPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-  }
-  
-  .coin-icon {
-    animation: coinPulse 2s ease-in-out infinite;
+    background: var(--color-primary);
   }

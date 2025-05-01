@@ -33,6 +33,6 @@ class Bet(Base):
 
     user = relationship("User", foreign_keys=[user_id], back_populates="bets")
     room = relationship("Room", back_populates="bets")
-    mediator = relationship("User", foreign_keys=[mediator_id])
-    approver = relationship("User", foreign_keys=[approved_by])
-    notifications = relationship("Notification", back_populates="bet", cascade="all, delete-orphan")  # Added this line
+    mediator = relationship("User", foreign_keys=[mediator_id], back_populates="mediated_bets")
+    approver = relationship("User", foreign_keys=[approved_by], back_populates="approved_bets")
+    notifications = relationship("Notification", back_populates="bet", cascade="all, delete-orphan")

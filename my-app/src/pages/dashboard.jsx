@@ -25,8 +25,8 @@ export default function Dashboard() {
       title: 'You won a bet on Team A!',
       description: '+250 points awarded to your account',
       time: '2m ago',
-      bgColor: 'bg-red-500/20',
-      textColor: 'text-red-400',
+      bgColor: 'bg-primary/20',
+      textColor: 'text-primary',
     },
     {
       id: 2,
@@ -43,8 +43,8 @@ export default function Dashboard() {
       title: 'New room created: Epic Showdown',
       description: 'Join now to compete for 500 coins!',
       time: '25m ago',
-      bgColor: 'bg-red-500/20',
-      textColor: 'text-red-400',
+      bgColor: 'bg-primary/20',
+      textColor: 'text-primary',
     },
     {
       id: 4,
@@ -112,23 +112,23 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-dark-transparent">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-400 mb-4"></div>
-          <div className="animate-pulse text-red-400 text-xl">Loading...</div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
+          <div className="animate-pulse text-primary text-xl">Loading...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-dark-transparent relative overflow-hidden">
+    <div className="flex min-h-screen bg-background relative overflow-hidden">
       {/* Left Sidebar: Hot Bets */}
-      <div className="w-80 bg-glass-dark border-r border-zinc-800/60 flex flex-col p-6 z-10">
+      <div className="w-80 glass-effect flex flex-col p-6 z-10">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
-            <div className="w-10 h-10 rounded-lg bg-zinc-800/80 border border-zinc-700/50 flex items-center justify-center mr-3 group-hover:border-red-500/30 transition-all duration-300">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-zinc-300">
+            <div className="smooth-logo w-10 h-10 rounded-lg flex items-center justify-center mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-6 h-6">
                 <path
                   d="M7 4H17V18C17 19.1046 16.1046 20 15 20H9C7.89543 20 7 19.1046 7 18V4Z"
                   stroke="currentColor"
@@ -142,9 +142,9 @@ export default function Dashboard() {
                 <path d="M10 16H14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
               </svg>
             </div>
-            <h1 className="text-xl font-semibold text-zinc-200">SodaClub</h1>
+            <h1 className="text-xl font-semibold text-heading">SodaClub</h1>
           </div>
-          <div className="flex items-center bg-zinc-800/70 px-3 py-1 rounded-full border border-zinc-700/50 shadow-lg shadow-red-900/5">
+          <div className="flex items-center bg-card px-3 py-1 rounded-full border border-input-border shadow-lg shadow-primary/5">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-4 h-4 mr-1 text-amber-400 coin-icon">
               <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
               <circle cx="12" cy="12" r="5" fill="currentColor" />
@@ -154,8 +154,8 @@ export default function Dashboard() {
         </div>
 
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-zinc-200">Live Bets</h2>
-          <div className="flex items-center text-xs text-zinc-400">
+          <h2 className="text-lg font-semibold text-heading">Live Bets</h2>
+          <div className="flex items-center text-xs text-body">
             <Clock size={14} className="mr-1" />
             <span>Live Feed</span>
           </div>
@@ -165,15 +165,15 @@ export default function Dashboard() {
           {hotBets.map((bet) => (
             <div
               key={bet.id}
-              className="p-4 bg-glass-dark rounded-lg border border-zinc-700/30 hover:bg-glass-hover hover:border-red-500/20 transition-all duration-300 cursor-pointer hover-panel"
+              className="feature-card p-4 rounded-lg border border-input-border hover-panel"
             >
               <div className="flex justify-between items-center">
                 <div>
-                  <h3 className="text-base font-medium text-zinc-200">{bet.title}</h3>
+                  <h3 className="text-base font-medium text-heading">{bet.title}</h3>
                   <div className="flex items-center mt-1">
-                    <span className="text-xs text-zinc-400">{bet.category}</span>
-                    <span className="mx-2 w-1 h-1 bg-zinc-500 rounded-full"></span>
-                    <div className="flex items-center text-xs text-red-400">
+                    <span className="text-xs text-body">{bet.category}</span>
+                    <span className="mx-2 w-1 h-1 bg-border rounded-full"></span>
+                    <div className="flex items-center text-xs text-primary">
                       <Clock size={12} className="mr-1" />
                       {bet.time}
                     </div>
@@ -181,7 +181,7 @@ export default function Dashboard() {
                 </div>
                 <div className="flex flex-col items-end">
                   <span className="text-sm font-semibold text-amber-400">{bet.odds}</span>
-                  <span className="text-xs text-zinc-400 mt-1">Odds</span>
+                  <span className="text-xs text-body mt-1">Odds</span>
                 </div>
               </div>
             </div>
@@ -191,7 +191,7 @@ export default function Dashboard() {
         <button
           onClick={handleLogout}
           disabled={loading}
-          className="mt-6 w-full py-3 px-4 flex items-center justify-center text-base bg-glass-dark text-zinc-200 font-semibold rounded-lg border border-zinc-700/30 hover:bg-red-900/20 hover:border-red-500/30 transition-all duration-300 button-glow disabled:opacity-50"
+          className="smooth-button mt-6 w-full py-3 px-4 flex items-center justify-center text-base font-semibold rounded-lg disabled:opacity-50"
         >
           <LogOut size={18} className="mr-2" />
           Logout
@@ -201,63 +201,63 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col p-8 relative z-10">
         {/* Header with username */}
-        <div className="flex items-center justify-between mb-8 border-b border-zinc-800/50 pb-4">
+        <div className="flex items-center justify-between mb-8 border-b border-border/50 pb-4">
           <div className="flex items-center space-x-2">
-            <h2 className="text-2xl font-semibold text-zinc-200">
-              Welcome back, <span className="text-red-400">{profile.username}</span>
+            <h2 className="text-2xl font-semibold text-heading">
+              Welcome back, <span className="text-primary">{profile.username}</span>
             </h2>
-            {error && <span className="text-xs text-red-400">{error}</span>}
+            {error && <span className="text-xs text-error">{error}</span>}
           </div>
 
           {/* Top-Right Icons */}
           <div className="flex space-x-3">
             <button
               onClick={() => navigate('/shop')}
-              className="w-10 h-10 flex items-center justify-center rounded-lg bg-glass-dark border border-zinc-700/30 hover:bg-glass-hover hover:border-red-500/20 transition-all duration-300 hover-panel"
+              className="icon-container w-10 h-10 flex items-center justify-center rounded-lg"
             >
-              <ShoppingBag className="w-5 h-5 text-zinc-300" />
+              <ShoppingBag className="w-5 h-5 text-heading" />
             </button>
             <button
               onClick={() => navigate('/notifications')}
-              className="w-10 h-10 flex items-center justify-center rounded-lg bg-glass-dark border border-zinc-700/30 hover:bg-glass-hover hover:border-red-500/20 transition-all duration-300 hover-panel"
+              className="icon-container w-10 h-10 flex items-center justify-center rounded-lg"
             >
-              <Bell className="w-5 h-5 text-zinc-300" />
+              <Bell className="w-5 h-5 text-heading" />
             </button>
             <button
               onClick={() => navigate('/profile')}
-              className="flex items-center px-3 rounded-lg bg-glass-dark border border-zinc-700/30 hover:bg-glass-hover hover:border-red-500/20 transition-all duration-300 hover-panel"
+              className="icon-container flex items-center px-3 rounded-lg"
             >
-              <User className="w-5 h-5 text-zinc-300 mr-2" />
-              <span className="text-sm font-medium text-zinc-300">{profile.username}</span>
+              <User className="w-5 h-5 text-heading mr-2" />
+              <span className="text-sm font-medium text-heading">{profile.username}</span>
             </button>
           </div>
         </div>
 
         {/* Main Content Area - Top Half */}
         <div className="grid grid-cols-2 gap-6 mb-8">
-          <div className="bg-glass-dark rounded-lg border border-zinc-700/30 p-6 hover:bg-glass-hover hover:border-red-500/20 transition-all duration-300 cursor-pointer group hover-panel">
+          <div className="feature-card rounded-lg p-6 cursor-pointer group">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-zinc-200 group-hover:text-red-400 transition-colors duration-300">View Rooms</h3>
-              <span className="px-3 py-1 text-xs bg-glass-dark text-zinc-300 rounded-full border border-zinc-600/30 group-hover:bg-red-900/20 group-hover:border-red-500/30 transition-all duration-300">5 Active</span>
+              <h3 className="text-xl font-semibold text-heading group-hover:text-primary transition-colors duration-300">View Rooms</h3>
+              <span className="px-3 py-1 text-xs bg-card text-heading rounded-full border border-input-border group-hover:bg-primary/10 group-hover:border-primary/30 transition-all duration-300">5 Active</span>
             </div>
-            <p className="text-zinc-400 mb-6">Access your current game rooms and continue where you left off.</p>
+            <p className="text-body mb-6">Access your current game rooms and continue where you left off.</p>
             <button
               onClick={() => navigate('/rooms')}
-              className="w-full py-3 text-base bg-glass-dark hover:bg-red-900/20 text-zinc-200 font-semibold rounded-lg transition-all border border-zinc-600/30 hover:border-red-500/20 button-glow"
+              className="smooth-button w-full py-3 text-base font-semibold rounded-lg transition-all"
             >
               View My Rooms
             </button>
           </div>
 
-          <div className="bg-glass-dark rounded-lg border border-zinc-700/30 p-6 hover:bg-glass-hover hover:border-red-500/20 transition-all duration-300 cursor-pointer group hover-panel">
+          <div className="feature-card rounded-lg p-6 cursor-pointer group">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-zinc-200 group-hover:text-red-400 transition-colors duration-300">Explore Rooms</h3>
-              <span className="px-3 py-1 text-xs bg-glass-dark text-zinc-300 rounded-full border border-zinc-600/30 group-hover:bg-red-900/20 group-hover:border-red-500/30 transition-all duration-300">12 Public</span>
+              <h3 className="text-xl font-semibold text-heading group-hover:text-primary transition-colors duration-300">Explore Rooms</h3>
+              <span className="px-3 py-1 text-xs bg-card text-heading rounded-full border border-input-border group-hover:bg-primary/10 group-hover:border-primary/30 transition-all duration-300">12 Public</span>
             </div>
-            <p className="text-zinc-400 mb-6">Discover new gaming rooms and join communities with similar interests.</p>
+            <p className="text-body mb-6">Discover new gaming rooms and join communities with similar interests.</p>
             <button
               onClick={() => navigate('/explore')}
-              className="w-full py-3 text-base bg-glass-dark hover:bg-red-900/20 text-zinc-200 font-semibold rounded-lg transition-all border border-zinc-600/30 hover:border-red-500/20 button-glow"
+              className="smooth-button w-full py-3 text-base font-semibold rounded-lg transition-all"
             >
               Explore Now
             </button>
@@ -267,46 +267,46 @@ export default function Dashboard() {
         {/* Bottom Section */}
         <div className="grid grid-cols-3 gap-6">
           {/* Recent Activity */}
-          <div className="col-span-2 bg-glass-dark rounded-lg border border-zinc-700/30 p-6 hover:bg-glass-hover hover:border-red-500/10 transition-all duration-500 flex flex-col">
+          <div className="col-span-2 feature-card rounded-lg p-6 flex flex-col">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
-                <Zap className="w-5 h-5 text-red-400 mr-2" />
-                <h3 className="text-xl font-semibold text-zinc-200">Recent Activity</h3>
+                <Zap className="w-5 h-5 text-primary mr-2" />
+                <h3 className="text-xl font-semibold text-heading">Recent Activity</h3>
               </div>
-              <span className="px-3 py-1 text-xs bg-glass-dark text-zinc-300 rounded-full border border-zinc-600/30">Live</span>
+              <span className="px-3 py-1 text-xs bg-card text-heading rounded-full border border-input-border">Live</span>
             </div>
             <div className="flex-1 overflow-y-auto space-y-4">
               {recentActivities.map((activity) => (
                 <div
                   key={activity.id}
-                  className="flex items-center justify-between bg-glass-dark rounded-lg p-4 border border-zinc-700/20 hover:bg-glass-hover hover:border-red-500/10 transition-all duration-300"
+                  className="feature-card flex items-center justify-between rounded-lg p-4 border border-input-border"
                 >
                   <div className="flex items-center">
                     <div className={`w-8 h-8 rounded-full ${activity.bgColor} ${activity.textColor} flex items-center justify-center mr-3`}>
                       {activity.icon}
                     </div>
                     <div>
-                      <span className="font-medium text-zinc-200">{activity.title}</span>
-                      <p className="text-xs text-zinc-400 mt-1">{activity.description}</p>
+                      <span className="font-medium text-heading">{activity.title}</span>
+                      <p className="text-xs text-body mt-1">{activity.description}</p>
                     </div>
                   </div>
-                  <span className="text-xs text-zinc-500">{activity.time}</span>
+                  <span className="text-xs text-body">{activity.time}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Friends Section */}
-          <div className="bg-glass-dark rounded-lg border border-zinc-700/30 p-6 hover:bg-glass-hover hover:border-red-500/10 transition-all duration-500">
+          <div className="feature-card rounded-lg p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
-                <Users className="w-5 h-5 text-zinc-300 mr-2" />
-                <h3 className="text-xl font-semibold text-zinc-200">Friends</h3>
+                <Users className="w-5 h-5 text-heading mr-2" />
+                <h3 className="text-xl font-semibold text-heading">Friends</h3>
               </div>
-              <span className="px-3 py-1 text-xs bg-glass-dark text-zinc-300 rounded-full border border-zinc-600/30">2 Online</span>
+              <span className="px-3 py-1 text-xs bg-card text-heading rounded-full border border-input-border">2 Online</span>
             </div>
-            <p className="text-zinc-400 mb-6">Connect with friends and invite them to your gaming rooms.</p>
-            <button className="w-full py-3 text-base bg-glass-dark hover:bg-red-900/20 text-zinc-200 font-semibold rounded-lg transition-all border border-zinc-600/30 hover:border-red-500/20 button-glow">
+            <p className="text-body mb-6">Connect with friends and invite them to your gaming rooms.</p>
+            <button className="smooth-button w-full py-3 text-base font-semibold rounded-lg transition-all">
               View All Friends
             </button>
           </div>

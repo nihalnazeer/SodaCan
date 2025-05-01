@@ -1,0 +1,73 @@
+2025-05-01 05:28:35,568 - ERROR - Failed to import app.api.rooms: 9 validation errors for Settings
+database_url
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+jwt_secret_key
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+jwt_algorithm
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+access_token_expire_minutes
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+refresh_token_expire_days
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+pusher_app_id
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+pusher_key
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+pusher_secret
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+pusher_cluster
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+Traceback (most recent call last):
+  File "/Users/mohammednihal/SodaCan/Backend/tests/test_room_import.py", line 11, in <module>
+    from app.api.rooms import router
+  File "/Users/mohammednihal/SodaCan/Backend/app/api/rooms.py", line 3, in <module>
+    from app.core.database import get_db
+  File "/Users/mohammednihal/SodaCan/Backend/app/core/database.py", line 4, in <module>
+    from app.config import settings
+  File "/Users/mohammednihal/SodaCan/Backend/app/config.py", line 32, in <module>
+    settings = Settings()
+  File "/Users/mohammednihal/SodaCan/bet/lib/python3.9/site-packages/pydantic_settings/main.py", line 176, in __init__
+    super().__init__(
+  File "/Users/mohammednihal/SodaCan/bet/lib/python3.9/site-packages/pydantic/main.py", line 253, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+pydantic_core._pydantic_core.ValidationError: 9 validation errors for Settings
+database_url
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+jwt_secret_key
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+jwt_algorithm
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+access_token_expire_minutes
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+refresh_token_expire_days
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+pusher_app_id
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+pusher_key
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+pusher_secret
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+pusher_cluster
+  Field required [type=missing, input_value={}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+2025-05-01 05:34:22,719 - DEBUG - Loading rooms.py module
+2025-05-01 05:34:22,724 - DEBUG - Successfully imported app.api.rooms
+2025-05-01 05:38:01,258 - DEBUG - Loading rooms.py module
+2025-05-01 05:38:01,263 - DEBUG - Successfully imported app.api.rooms
